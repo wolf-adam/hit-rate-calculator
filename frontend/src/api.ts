@@ -1,0 +1,49 @@
+import axios from 'axios'
+import type {
+  NewRecord,
+  PlayerOption,
+  ProductOption,
+  RecordRow,
+  SetOption,
+} from './types'
+
+const client = axios.create({ baseURL: '/api' })
+const exchangeClient = axios.create({ baseURL: 'https://api.frankfurter.dev/v1' })
+
+export async function fetchSets(): Promise<SetOption[]> {
+  const { data } = await client.get<SetOption[]>('/sets')
+  return data
+}
+
+export async function fetchPlayers(): Promise<PlayerOption[]> {
+  const { data } = await client.get<PlayerOption[]>('/players')
+  return data
+}
+
+export async function fetchProducts(): Promise<ProductOption[]> {
+  const { data } = await client.get<ProductOption[]>('/products')
+  return data
+}
+
+export async function fetchRecords(
+  setId: number,
+): Promise<RecordRow[]> {
+  const { data } = await client.get<RecordRow[]>('/records', {
+    params: { set_id: setId },
+  })
+  return data
+}
+
+export async function createRecord(
+  record: NewRecord,
+): Promise<RecordRow> {
+  const { data } = await client.post<RecordRow>('/records', record)
+  return data
+}
+
+export async function fetchEurToHufRate(): Promise<number> {
+  const { data } = await exchangeClient.get<{ rates: { HUF: number } }>('/latest', {
+    params: { base: 'EUR', symbols: 'HUF' },
+  })
+  return data.rates.HUF
+}
