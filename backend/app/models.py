@@ -36,6 +36,18 @@ class Product(Base):
     name: Mapped[str] = mapped_column(String(240), nullable=False)
     booster_volume: Mapped[int] = mapped_column(nullable=False)
 
+
+class Card(Base):
+    __tablename__ = "hit_rate_cards"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(240), unique=True, nullable=False)
+    link: Mapped[str] = mapped_column(String(500), unique=True, nullable=False)
+    image_src: Mapped[str] = mapped_column(String(500), nullable=False)
+    price: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=0.0, nullable=False
+    )
+
 class Record(Base):
     __tablename__ = "hit_rate_records"
 
@@ -55,8 +67,11 @@ class Record(Base):
     fr: Mapped[int] = mapped_column(default=0, nullable=False)
     hr: Mapped[int] = mapped_column(default=0, nullable=False)
     cc: Mapped[int] = mapped_column(default=0, nullable=False)
-    biggest_hit_link: Mapped[str] = mapped_column(String(240), nullable=False)
+    biggest_hit_link: Mapped[str] = mapped_column(String(500), nullable=False)
     biggest_hit_src: Mapped[str | None] = mapped_column(String(500))
+    card_id: Mapped[int | None] = mapped_column(
+        ForeignKey("hit_rate_cards.id"), index=True
+    )
     in_product_id: Mapped[int] = mapped_column(
         ForeignKey("hit_rate_products.id"), nullable=False, index=True
     )
@@ -66,3 +81,4 @@ class Record(Base):
     set: Mapped[CardSet] = relationship()
     product: Mapped[Product] = relationship()
     in_product: Mapped[Product] = relationship()
+    card: Mapped[Card | None] = relationship()

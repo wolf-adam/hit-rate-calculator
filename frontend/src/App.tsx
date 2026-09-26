@@ -205,10 +205,10 @@ function App() {
       ) : (
         <AnalyticsView />
       )}
-      {selectedSetId && (
+      {selectedSet && (
         <Dialog
           open={dialogOpen}
-          setId={selectedSetId}
+          set={selectedSet}
           players={players}
           products={products}
           onClose={() => setDialogOpen(false)}

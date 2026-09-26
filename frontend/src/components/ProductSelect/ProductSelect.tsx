@@ -56,14 +56,11 @@ function ProductSelect({
         aria-label={ariaLabel}
         value={value}
         onChange={(event) => onChange(String(event.target.value))}
-        displayEmpty
         renderValue={(selected: SelectProps['value']) => {
           const product = getProduct(selected)
           return product ? (
             <span className="product-select-value">{renderProduct(product)}</span>
-          ) : (
-            <span className="product-select-placeholder">Select product</span>
-          )
+          ) : null
         }}
       >
         <MenuItem value="" disabled>Select product</MenuItem>

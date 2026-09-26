@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { type CSSProperties, useState } from 'react'
 import {
   Button,
   Dialog as MuiDialog,
@@ -13,14 +13,21 @@ import {
   Typography,
 } from '@mui/material'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import { createRecord, fetchRecords } from './api'
-import type { PlayerOption, ProductOption, RecordRow } from './types'
+import { createCard, createRecord, fetchRecords } from './api'
+import type {
+  CardDraft,
+  PlayerOption,
+  ProductOption,
+  RecordRow,
+  SetOption,
+} from './types'
 import ProductSelect from './components/ProductSelect/ProductSelect'
+import CardEntry from './components/CardEntry/CardEntry'
 import './Dialog.scss'
 
 type DialogProps = {
   open: boolean
-  setId: number
+  set: SetOption
   players: PlayerOption[]
   products: ProductOption[]
   onClose: () => void
@@ -36,9 +43,7 @@ type RecordForm = {
   cc: string
   fr: string
   hr: string
-  biggest_hit_link: string
-  biggest_hit_src: string
-  price: string
+  card: CardDraft
 }
 
 const emptyRecord: RecordForm = {
@@ -49,32 +54,33 @@ const emptyRecord: RecordForm = {
   cc: '',
   fr: '',
   hr: '',
-  biggest_hit_link: '',
-  biggest_hit_src: '',
-  price: '',
+  card: {
+    name: '',
+    link: '',
+    image_src: '',
+    price: '',
+  },
 }
 
-const fields = [
+const rarityFields = [
     { key: 'ex', label: 'Ex', type: 'number' },
     { key: 'ir', label: 'IR', type: 'number' },
     { key: 'sir', label: 'SIR', type: 'number' },
     { key: 'cc', label: 'CC', type: 'number' },
     { key: 'fr', label: 'FR', type: 'number' },
     { key: 'hr', label: 'HR', type: 'number' },
-    { key: 'biggest_hit_link', label: "Biggest hit's link", type: 'text' },
-    { key: 'biggest_hit_src', label: "Biggest hit's image URL", type: 'text' },
-    { key: 'price', label: 'Price (€)', type: 'number' },
 ] as const
 
 function DialogComponent({
   open,
-  setId,
+  set,
   players,
   products,
   onClose,
   onRecordsUpdated,
   onError,
 }: DialogProps) {
+  const fields = rarityFields.filter((field) => (set[field.key] ?? 0) > 0)
   const [playerId, setPlayerId] = useState(0)
   const [records, setRecords] = useState<RecordForm[]>([emptyRecord])
   const [saving, setSaving] = useState(false)
@@ -91,6 +97,12 @@ function DialogComponent({
           [field]: field === 'in_product_id' ? Number(value) : value,
         }
         : record
+    )))
+  }
+
+  function updateCard(index: number, card: CardDraft) {
+    setRecords((current) => current.map((record, recordIndex) => (
+      recordIndex === index ? { ...record, card } : record
     )))
   }
 
@@ -113,20 +125,31 @@ function DialogComponent({
     setSaving(true)
     onError('')
     try {
-      await Promise.all(records.map((record) => createRecord({
-        ...record,
-        ex: Number(record.ex),
-        ir: Number(record.ir),
-        sir: Number(record.sir),
-        cc: Number(record.cc),
-        fr: Number(record.fr),
-        hr: Number(record.hr),
-        price: Number(record.price),
-        date_created: new Date().toISOString(),
-        player_id: playerId,
-        set_id: setId,
-      })))
-      onRecordsUpdated(await fetchRecords(setId))
+      await Promise.all(records.map(async (record) => {
+        const cardId = record.card.card_id ?? (await createCard({
+          name: record.card.name,
+          link: record.card.link,
+          image_src: record.card.image_src,
+          price: Number(record.card.price),
+        })).id
+        return createRecord({
+          card_id: cardId,
+          biggest_hit_link: record.card.link,
+          biggest_hit_src: record.card.image_src,
+          ex: Number(record.ex),
+          ir: Number(record.ir),
+          sir: Number(record.sir),
+          cc: Number(record.cc),
+          fr: Number(record.fr),
+          hr: Number(record.hr),
+          price: Number(record.card.price),
+          date_created: new Date().toISOString(),
+          player_id: playerId,
+          set_id: set.id,
+          in_product_id: record.in_product_id,
+        })
+      }))
+      onRecordsUpdated(await fetchRecords(set.id))
       resetForm()
       onClose()
     } catch {
@@ -181,7 +204,12 @@ function DialogComponent({
                   <DeleteOutlineIcon />
                 </IconButton>
               </Stack>
-              <div className="record-form">
+              <div
+                className="record-form"
+                style={{
+                  '--product-columns': 15 - fields.length * 2,
+                } as CSSProperties}
+              >
                 <ProductSelect
                   className="record-field record-field--product"
                   aria-label={`select product for record ${index + 1}`}
@@ -199,14 +227,7 @@ function DialogComponent({
                     className={`record-field record-field--${field.key}`}
                     label={field.label}
                     type={field.type}
-                    slotProps={field.type === 'number'
-                      ? {
-                        htmlInput: {
-                          min: 0,
-                          step: field.key === 'price' ? 0.1 : 1,
-                        },
-                      }
-                      : undefined}
+                    slotProps={{ htmlInput: { min: 0, step: 1 } }}
                     value={record[field.key]}
                     onChange={(event) => updateRecord(
                       index,
@@ -215,6 +236,10 @@ function DialogComponent({
                     )}
                   />
                 ))}
+                <CardEntry
+                  value={record.card}
+                  onChange={(card) => updateCard(index, card)}
+                />
               </div>
             </Stack>
           ))}
@@ -238,9 +263,13 @@ function DialogComponent({
         <Button
           variant="contained"
           onClick={() => void handleSubmit()}
-          disabled={saving || !playerId || records.some(
-            (record) => !record.in_product_id,
-          )}
+          disabled={saving || !playerId || records.some((record) => (
+            !record.in_product_id
+            || !record.card.link
+            || !record.card.name
+            || !record.card.image_src
+            || !record.card.price
+          ))}
         >
           {saving ? 'Saving…' : `Save ${records.length} record${records.length === 1 ? '' : 's'}`}
         </Button>

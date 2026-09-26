@@ -2,6 +2,10 @@
   padding-top: 10px;
 }
 
+.edit-record-dialog .record-form > .card-entry {
+  grid-column: 1 / -1;
+}
+
 .edit-record-dialog .record-field--ex,
 .edit-record-dialog .record-field--ir,
 .edit-record-dialog .record-field--sir,

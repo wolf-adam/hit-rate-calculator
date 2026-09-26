@@ -1,6 +1,8 @@
 import axios from 'axios'
 import type {
   NewRecord,
+  Card,
+  CardDraft,
   PlayerOption,
   ProductOption,
   RecordItem,
@@ -24,6 +26,28 @@ export async function fetchPlayers(): Promise<PlayerOption[]> {
 
 export async function fetchProducts(): Promise<ProductOption[]> {
   const { data } = await client.get<ProductOption[]>('/products')
+  return data
+}
+
+export async function lookupCard(link: string): Promise<Card> {
+  const { data } = await client.get<Card>('/cards/lookup', {
+    params: { link },
+  })
+  return data
+}
+
+export async function createCard(card: Omit<CardDraft, 'card_id' | 'price'> & {
+  price: number
+}): Promise<Card> {
+  const { data } = await client.post<Card>('/cards', card)
+  return data
+}
+
+export async function updateCard(
+  cardId: number,
+  card: Omit<CardDraft, 'card_id' | 'price'> & { price: number },
+): Promise<Card> {
+  const { data } = await client.put<Card>(`/cards/${cardId}`, card)
   return data
 }
 

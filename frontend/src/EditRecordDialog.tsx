@@ -9,9 +9,16 @@ import {
   Stack,
   TextField,
 } from '@mui/material'
-import { updateRecord } from './api'
-import type { ProductOption, RecordItem, RecordUpdate } from './types'
+import { createCard, updateCard, updateRecord } from './api'
+import type {
+  CardDraft,
+  ProductOption,
+  RecordItem,
+  RecordUpdate,
+} from './types'
 import ProductSelect from './components/ProductSelect/ProductSelect'
+import CardEntry from './components/CardEntry/CardEntry'
+import { formatBiggestHitLink } from './utils'
 import './EditRecordDialog.scss'
 
 type EditRecordDialogProps = {
@@ -29,9 +36,7 @@ type RecordForm = {
   cc: string
   fr: string
   hr: string
-  biggest_hit_link: string
-  biggest_hit_src: string
-  price: string
+  card: CardDraft
 }
 
 const rarityFields = [
@@ -52,9 +57,13 @@ function toForm(record: RecordItem): RecordForm {
     cc: String(record.cc),
     fr: String(record.fr),
     hr: String(record.hr),
-    biggest_hit_link: record.biggest_hit_link,
-    biggest_hit_src: record.biggest_hit_src ?? '',
-    price: String(record.price),
+    card: {
+      card_id: record.card_id,
+      name: record.card?.name ?? formatBiggestHitLink(record.biggest_hit_link),
+      link: record.card?.link ?? record.biggest_hit_link,
+      image_src: record.card?.image_src ?? record.biggest_hit_src ?? '',
+      price: String(record.card?.price ?? record.price),
+    },
   }
 }
 
@@ -77,25 +86,43 @@ function EditRecordDialog({
     setForm((current) => current ? { ...current, [field]: value } : current)
   }
 
+  function updateCardDraft(card: CardDraft) {
+    setForm((current) => current ? { ...current, card } : current)
+  }
+
   async function handleSave() {
     if (!record || !form) return
 
     setSaving(true)
     setError('')
-    const payload: RecordUpdate = {
-      in_product_id: Number(form.in_product_id),
-      ex: Number(form.ex),
-      ir: Number(form.ir),
-      sir: Number(form.sir),
-      cc: Number(form.cc),
-      fr: Number(form.fr),
-      hr: Number(form.hr),
-      biggest_hit_link: form.biggest_hit_link,
-      biggest_hit_src: form.biggest_hit_src || null,
-      price: Number(form.price),
-    }
 
     try {
+      const card = form.card.card_id
+        ? await updateCard(form.card.card_id, {
+          name: form.card.name,
+          link: form.card.link,
+          image_src: form.card.image_src,
+          price: Number(form.card.price),
+        })
+        : await createCard({
+          name: form.card.name,
+          link: form.card.link,
+          image_src: form.card.image_src,
+          price: Number(form.card.price),
+        })
+      const payload: RecordUpdate = {
+        card_id: card.id,
+        in_product_id: Number(form.in_product_id),
+        ex: Number(form.ex),
+        ir: Number(form.ir),
+        sir: Number(form.sir),
+        cc: Number(form.cc),
+        fr: Number(form.fr),
+        hr: Number(form.hr),
+        biggest_hit_link: card.link,
+        biggest_hit_src: card.image_src,
+        price: card.price,
+      }
       await updateRecord(record.id, payload)
       await onSaved()
       onClose()
@@ -137,25 +164,14 @@ function EditRecordDialog({
                 onChange={(event) => updateField(field.key, event.target.value)}
               />
             ))}
-            <TextField
-              className="record-field record-field--biggest_hit_link"
-              label="Biggest hit's link"
-              value={form?.biggest_hit_link ?? ''}
-              onChange={(event) => updateField('biggest_hit_link', event.target.value)}
-            />
-            <TextField
-              className="record-field record-field--biggest_hit_src"
-              label="Biggest hit's image URL"
-              value={form?.biggest_hit_src ?? ''}
-              onChange={(event) => updateField('biggest_hit_src', event.target.value)}
-            />
-            <TextField
-              className="record-field record-field--price"
-              label="Price (€)"
-              type="number"
-              slotProps={{ htmlInput: { min: 0, step: 0.1 } }}
-              value={form?.price ?? ''}
-              onChange={(event) => updateField('price', event.target.value)}
+            <CardEntry
+              value={form?.card ?? {
+                name: '',
+                link: '',
+                image_src: '',
+                price: '',
+              }}
+              onChange={updateCardDraft}
             />
           </div>
         </Stack>
@@ -165,7 +181,8 @@ function EditRecordDialog({
         <Button
           variant="contained"
           onClick={() => void handleSave()}
-          disabled={saving || !form?.in_product_id || !form.biggest_hit_link}
+          disabled={saving || !form?.in_product_id || !form.card.link
+            || !form.card.name || !form.card.image_src || !form.card.price}
         >
           {saving ? 'Saving…' : 'Save changes'}
         </Button>

@@ -1,17 +1,24 @@
 .record-form {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-columns: repeat(15, minmax(0, 1fr));
   gap: 18px;
   padding-top: 10px;
 }
 
+.record-form > .card-entry {
+  grid-column: 1 / -1;
+}
+
 .record-field--product {
-  grid-column: span 4;
+  grid-column: span var(--product-columns);
 }
 
 .record-field--ex,
 .record-field--ir,
 .record-field--sir,
+.record-field--cc,
+.record-field--fr,
+.record-field--hr,
 .record-field--special {
   grid-column: span 2;
 }

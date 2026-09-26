@@ -20,8 +20,25 @@ export type ProductOption = {
   name: string
 }
 
+export type Card = {
+  id: number
+  name: string
+  link: string
+  image_src: string
+  price: number
+}
+
+export type CardDraft = {
+  card_id?: number
+  name: string
+  link: string
+  image_src: string
+  price: string
+}
+
 export type RecordRow = {
   id: number
+  card_id?: number
   name: string
   ex: number
   ir: number
@@ -36,10 +53,12 @@ export type RecordRow = {
   price: number
   total_boosters: number
   items: RecordItem[]
+  card?: Card
 }
 
 export type RecordItem = {
   id: number
+  card_id?: number
   date_created: string
   in_product_id: number
   ex: number
@@ -51,6 +70,7 @@ export type RecordItem = {
   biggest_hit_link: string
   biggest_hit_src: string | null
   price: number
+  card?: Card
 }
 
 export type RecordUpdate = Omit<RecordItem, 'id' | 'date_created'>
@@ -59,6 +79,7 @@ export type NewRecord = Omit<
   RecordRow,
   'id' | 'name' | 'total' | 'total_boosters' | 'items'
 > & {
+  card_id?: number
   date_created: string
   player_id: number
   set_id: number

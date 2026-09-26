@@ -5,9 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .card_utils import card_name_from_link, normalize_card_link
 from .database import get_db
-from .models import CardSet, Player, Product, Record
+from .models import Card, CardSet, Player, Product, Record
 from .schemas import (
+    CardCreate,
+    CardResponse,
+    CardUpdate,
     PlayerResponse,
     ProductResponse,
     RecordCreate,
@@ -18,6 +22,88 @@ from .schemas import (
 )
 
 router = APIRouter()
+
+
+def resolve_card(
+    db: Session,
+    link: str,
+    image_src: str | None,
+    price: Decimal,
+    name: str | None = None,
+) -> Card:
+    normalized_link = normalize_card_link(link)
+    card = db.scalar(select(Card).where(Card.link == normalized_link))
+    if card is not None:
+        return card
+
+    card = Card(
+        name=name or card_name_from_link(normalized_link),
+        link=normalized_link,
+        image_src=image_src or normalized_link,
+        price=price,
+    )
+    db.add(card)
+    db.flush()
+    return card
+
+
+@router.get("/cards/lookup", response_model=CardResponse)
+def lookup_card(
+    link: str = Query(..., min_length=1), db: Session = Depends(get_db)
+) -> Card:
+    normalized_link = normalize_card_link(link)
+    card = db.scalar(select(Card).where(Card.link == normalized_link))
+    if card is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
+        )
+    return card
+
+
+@router.post("/cards", response_model=CardResponse, status_code=status.HTTP_201_CREATED)
+def create_card(
+    payload: CardCreate,
+    db: Session = Depends(get_db),
+) -> Card:
+    normalized_link = normalize_card_link(payload.link)
+    existing = db.scalar(
+        select(Card).where(
+            (Card.link == normalized_link) | (Card.name == payload.name)
+        )
+    )
+    if existing is not None:
+        return existing
+
+    card = Card(
+        name=payload.name,
+        link=normalized_link,
+        image_src=payload.image_src,
+        price=payload.price,
+    )
+    db.add(card)
+    db.commit()
+    db.refresh(card)
+    return card
+
+
+@router.put("/cards/{card_id}", response_model=CardResponse)
+def update_card(
+    card_id: int,
+    payload: CardUpdate,
+    db: Session = Depends(get_db),
+) -> Card:
+    card = db.get(Card, card_id)
+    if card is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
+        )
+    card.name = payload.name
+    card.link = normalize_card_link(payload.link)
+    card.image_src = payload.image_src
+    card.price = payload.price
+    db.commit()
+    db.refresh(card)
+    return card
 
 @router.get("/sets", response_model=list[SetResponse])
 def get_sets(db: Session = Depends(get_db)) -> list[CardSet]:
@@ -59,6 +145,7 @@ def aggregate_records(
                 "hr": Decimal(record.hr),
                 "biggest_hit_link": record.biggest_hit_link,
                 "biggest_hit_src": record.biggest_hit_src,
+                "card_id": record.card_id,
                 "in_product_id": record.in_product_id,
                 "price": Decimal(record.price),
             }
@@ -110,6 +197,9 @@ def aggregate_records(
                 total_boosters=total_boosters,
                 biggest_hit_link=str(top_record["biggest_hit_link"]),
                 biggest_hit_src=top_record["biggest_hit_src"],
+                card_id=int(top_record["card_id"])
+                if pd.notna(top_record["card_id"])
+                else None,
                 in_product_id=int(top_record["in_product_id"]),
                 price=Decimal(top_record["price"]),
                 total=total,
@@ -163,7 +253,21 @@ def update_record(
             status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
         )
 
-    for field, value in payload.model_dump().items():
+    card = db.get(Card, payload.card_id) if payload.card_id else record.card
+    if payload.card_id and card is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
+        )
+
+    update_values = payload.model_dump(exclude={"card_id"})
+    if card is not None:
+        update_values.update(
+            biggest_hit_link=card.link,
+            biggest_hit_src=card.image_src,
+            price=card.price,
+            card_id=card.id,
+        )
+    for field, value in update_values.items():
         setattr(record, field, value)
     db.commit()
     db.refresh(record)
@@ -189,7 +293,27 @@ def create_record(
             status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
         )
 
-    record = Record(**payload.model_dump())
+    card = db.get(Card, payload.card_id) if payload.card_id else None
+    if payload.card_id and card is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
+        )
+    if card is None:
+        card = resolve_card(
+            db,
+            payload.biggest_hit_link,
+            payload.biggest_hit_src,
+            payload.price,
+        )
+
+    record_data = payload.model_dump(exclude={"card_id"})
+    record_data.update(
+        card_id=card.id,
+        biggest_hit_link=card.link,
+        biggest_hit_src=card.image_src,
+        price=card.price,
+    )
+    record = Record(**record_data)
     db.add(record)
     db.commit()
     records = list(
