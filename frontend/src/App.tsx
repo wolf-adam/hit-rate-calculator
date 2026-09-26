@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Tab, Tabs } from "@mui/material";
+import { Alert, Snackbar } from "@mui/material";
 import {
   fetchEurToHufRate,
   fetchPlayers,
@@ -26,14 +26,23 @@ import type {
   RecordRow,
   SetOption,
 } from "./types";
-import { TAB_NAMES } from "./constants";
 import SummaryView from "./SummaryView";
 import AnalyticsView from "./AnalyticsView";
 import Dialog from "./Dialog";
 import Header from "./Header";
 import "./App.scss";
 
+type AppView = "summary" | "analytics";
+
+function getViewFromPath(pathname: string): AppView {
+  return pathname === "/analytics" ? "analytics" : "summary";
+}
+
 function App() {
+  const [toast, setToast] = useState<{
+    message: string;
+    severity: "success" | "error";
+  } | null>(null);
   const [currency, setCurrency] = useState<Currency>(() => readCurrency());
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [sets, setSets] = useState<SetOption[]>(() => readCachedSets());
@@ -47,7 +56,9 @@ function App() {
   const [records, setRecords] = useState<RecordRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeView, setActiveView] = useState(TAB_NAMES.SUMMARY);
+  const [activeView, setActiveView] = useState<AppView>(() =>
+    getViewFromPath(window.location.pathname),
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -160,6 +171,24 @@ function App() {
 
   const selectedSet = sets.find((set) => set.id === selectedSetId);
 
+  function notify(message: string, severity: "success" | "error") {
+    setToast({ message, severity });
+  }
+
+  function navigateTo(view: AppView) {
+    const path = view === "analytics" ? "/analytics" : "/";
+    window.history.pushState({}, "", path);
+    setActiveView(view);
+  }
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setActiveView(getViewFromPath(window.location.pathname));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   return (
     <main className="app-shell">
       <Header
@@ -174,6 +203,8 @@ function App() {
           setCurrency(nextCurrency);
           writeCurrency(nextCurrency);
         }}
+        activeView={activeView}
+        onNavigate={navigateTo}
       />
 
       {error && (
@@ -182,17 +213,7 @@ function App() {
         </Alert>
       )}
 
-      <Tabs
-        value={activeView}
-        onChange={(_, nextView: string) => setActiveView(nextView)}
-        aria-label="calculator views"
-      >
-        {Object.values(TAB_NAMES).map((tabName) => (
-          <Tab key={tabName} value={tabName} label={tabName} />
-        ))}
-      </Tabs>
-
-      {activeView === TAB_NAMES.SUMMARY ? (
+      {activeView === "summary" ? (
         <SummaryView
           selectedSet={selectedSet}
           currency={currency}
@@ -201,6 +222,7 @@ function App() {
           loading={loading}
           products={products}
           onRecordsUpdated={setRecords}
+          onNotify={notify}
         />
       ) : (
         <AnalyticsView />
@@ -213,9 +235,24 @@ function App() {
           products={products}
           onClose={() => setDialogOpen(false)}
           onRecordsUpdated={setRecords}
-          onError={setError}
+          onError={(message) => notify(message, "error")}
+          onSuccess={(message) => notify(message, "success")}
         />
       )}
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={4000}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={toast?.severity ?? "success"}
+          onClose={() => setToast(null)}
+          variant="filled"
+        >
+          {toast?.message}
+        </Alert>
+      </Snackbar>
     </main>
   );
 }

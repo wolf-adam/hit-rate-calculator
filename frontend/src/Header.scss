@@ -1,8 +1,5 @@
 .page-header {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  margin-bottom: 1rem;
+  margin-bottom: 24px;
 
   .MuiButton-root {
     padding: 12px 22px;
@@ -17,22 +14,17 @@
     box-shadow: none;
   }
 
-  .Mui-selected {
-    color: white !important;
-    background-color: #686663 !important;
-  }
-
   .MuiSelect-select {
-    font-size: clamp(1.8rem, 6vw, 3rem);
+    min-height: 0 !important;
+    padding-left: 0;
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
     font-weight: 600;
-    padding-left: 0px;
-    min-height: 0rem !important;
   }
 
   .MuiSelect-icon {
-    width: 2em;
-    height: 2em;
-    top: calc(50% - 1.1em);
+    width: 1.7em;
+    height: 1.7em;
+    top: calc(50% - 0.9em);
   }
 
   .MuiOutlinedInput-notchedOutline {
@@ -41,7 +33,80 @@
 }
 
 .header-toolbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 28px;
   width: 100%;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 18px;
+}
+
+.brand-mark,
+.desktop-nav button {
+  border: 0;
+  background: transparent;
+  color: #25221f;
+  cursor: pointer;
+  font: inherit;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.brand-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 11px;
+  background: #be5c3c;
+  color: #fffdf8;
+}
+
+.brand-icon svg {
+  font-size: 22px;
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.desktop-nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  color: #686663;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.desktop-nav button:hover,
+.desktop-nav button.active {
+  background: #e4eee5;
+  color: #25221f;
+}
+
+.desktop-nav svg {
+  font-size: 19px;
 }
 
 .header-copy,
@@ -49,39 +114,66 @@
   min-width: 0;
 }
 
-.header-copy .MuiSelect-root {
-  width: 27rem;
+.header-copy {
+  flex: 1 1 auto;
+}
+
+.header-copy .MuiInputBase-root {
+  width: min(27rem, 100%);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .header-actions > * {
   flex-shrink: 0;
 }
 
-@media (max-width: 640px) {
-  .page-header {
+.header-actions .MuiButton-root,
+.header-actions .MuiToggleButtonGroup-root {
+  height: 44px;
+}
+
+.mobile-menu-button {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .header-toolbar {
+    grid-template-columns: auto 1fr auto;
     gap: 16px;
-    margin-bottom: 16px;
   }
 
-  .page-header h1 {
-    font-size: 2.3rem;
+  .desktop-nav {
+    display: none;
   }
 
-  .header-actions > * {
+  .mobile-menu-button {
+    display: inline-flex !important;
+  }
+
+  .header-controls {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .header-copy .MuiInputBase-root {
     width: 100%;
   }
 
-  .header-actions .MuiToggleButtonGroup-root {
+  .header-actions {
     width: 100%;
-  }
-
-  .header-actions .MuiToggleButton-root {
-    flex: 1;
+    justify-content: space-between;
   }
 }
 
 @media (max-width: 420px) {
-  .page-header h1 {
-    font-size: 1.9rem;
+  .brand-title {
+    font-size: 1.05rem;
   }
 }

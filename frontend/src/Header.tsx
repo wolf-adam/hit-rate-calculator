@@ -1,9 +1,11 @@
+import { useState } from "react";
 import {
   Button,
   IconButton,
   MenuItem,
   Select,
-  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
   Menu,
   Typography,
 } from "@mui/material";
@@ -57,6 +59,11 @@ function Header({
             <InsightsOutlinedIcon /> Analytics
           </button>
         </nav>
+        <IconButton className="mobile-menu-button" aria-label="Open navigation menu" onClick={(event) => setMenuAnchor(event.currentTarget)}>
+          <MenuIcon />
+        </IconButton>
+      </div>
+      <div className="header-controls">
         <div className="header-copy">
           <Select
             labelId="set-select-label"
@@ -73,22 +80,33 @@ function Header({
             Turn your openings into meaningful insights.
           </Typography>
         </div>
-        <div className="header-actions">
-          <Button
-            variant="contained"
-            onClick={() => setDialogOpen(true)}
-            disabled={!canCreate}
-          >
-            + Add record
-          </Button>
-          <select className="currency-select" aria-label="display currency" value={currency} onChange={(event) => onCurrencyChange(event.target.value as Currency)}>
-            <option value="EUR">EUR</option>
-            <option value="HUF">HUF</option>
-          </select>
-          <IconButton className="mobile-menu-button" aria-label="Open navigation menu" onClick={(event) => setMenuAnchor(event.currentTarget)}>
-            <MenuIcon />
-          </IconButton>
-        </div>
+        {activeView === "summary" && (
+          <div className="header-actions">
+            <Button
+              variant="contained"
+              onClick={() => setDialogOpen(true)}
+              disabled={!canCreate}
+            >
+              + Add record
+            </Button>
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={currency}
+              onChange={(_, nextCurrency: Currency | null) => {
+                if (nextCurrency) onCurrencyChange(nextCurrency);
+              }}
+              onClick={(event) => {
+                event.stopPropagation();
+                onCurrencyChange(currency === "EUR" ? "HUF" : "EUR");
+              }}
+              aria-label="display currency"
+            >
+              <ToggleButton value="EUR" aria-label="EUR">EUR</ToggleButton>
+              <ToggleButton value="HUF" aria-label="HUF">HUF</ToggleButton>
+            </ToggleButtonGroup>
+          </div>
+        )}
       </div>
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
         <MenuItem onClick={() => { onNavigate("summary"); setMenuAnchor(null); }}>Hall of Fame</MenuItem>
