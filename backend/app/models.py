@@ -49,7 +49,7 @@ class Card(Base):
     )
 
 class Record(Base):
-    __tablename__ = "hit_rate_records"
+    __tablename__ = "hit_rate_records_v2"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     date_created: Mapped[datetime] = mapped_column(
@@ -68,9 +68,9 @@ class Record(Base):
     hr: Mapped[int] = mapped_column(default=0, nullable=False)
     cc: Mapped[int] = mapped_column(default=0, nullable=False)
     biggest_hit_link: Mapped[str] = mapped_column(String(500), nullable=False)
-    biggest_hit_src: Mapped[str | None] = mapped_column(String(500))
-    card_id: Mapped[int | None] = mapped_column(
-        ForeignKey("hit_rate_cards.id"), index=True
+    biggest_hit_src: Mapped[str] = mapped_column(String(500), nullable=False)
+    card_id: Mapped[int] = mapped_column(
+        ForeignKey("hit_rate_cards.id"), nullable=False, index=True
     )
     in_product_id: Mapped[int] = mapped_column(
         ForeignKey("hit_rate_products.id"), nullable=False, index=True
@@ -81,4 +81,4 @@ class Record(Base):
     set: Mapped[CardSet] = relationship()
     product: Mapped[Product] = relationship()
     in_product: Mapped[Product] = relationship()
-    card: Mapped[Card | None] = relationship()
+    card: Mapped[Card] = relationship()
