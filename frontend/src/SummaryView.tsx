@@ -19,6 +19,7 @@ type SummaryViewProps = {
   loading: boolean
   products: ProductOption[]
   onRecordsUpdated: (records: RecordRow[]) => void
+  onNotify: (message: string, severity: 'success' | 'error') => void
 }
 
 function SummaryView({
@@ -29,6 +30,7 @@ function SummaryView({
   loading,
   products,
   onRecordsUpdated,
+  onNotify,
 }: SummaryViewProps) {
   return (
     <Paper className="content-panel" elevation={0}>
@@ -48,6 +50,7 @@ function SummaryView({
           currency={currency}
           products={products}
           onRecordsUpdated={onRecordsUpdated}
+          onNotify={onNotify}
         />
       )}
     </Paper>

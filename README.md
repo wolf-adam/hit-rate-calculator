@@ -33,9 +33,10 @@ source .venv/bin/activate
 uvicorn app.main:app --reload
 ```
 
-On startup, missing application tables are created empty. New records use
-`hit_rate_records_v2`, which includes the required canonical card reference;
-the older `hit_rate_records` table is left unchanged for manual removal.
+On startup, missing application tables are created empty. Existing rows from
+`hit_rate_records` are copied into `hit_rate_records_v2` with validated set,
+player, product, and canonical card IDs. The older table is left unchanged for
+manual removal.
 
 The API runs at `http://localhost:8000`. Existing tables and data are left unchanged.
 

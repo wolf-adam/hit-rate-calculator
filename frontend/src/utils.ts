@@ -44,3 +44,18 @@ export const formatBiggestHitLink = (url: string): string => {
   const [, name, codeLetters, codeDigits] = codeMatch
   return `${name.trim()} (${codeLetters} ${codeDigits})`
 }
+
+export const getPkmnCardsSearchUrl = (cardmarketUrl: string): string => {
+  const path = cardmarketUrl.split(/[?#]/, 1)[0]
+  const lastSegment = path.split(/[\\/]/).pop() ?? ''
+  const decodedName = decodeURIComponent(lastSegment).trim()
+  const versionMatch = decodedName.match(/^(.+?)-V\d+(?:-|$)/i)
+  const nameBeforeVersion = versionMatch?.[1] ?? decodedName
+  const nameWithoutCode = nameBeforeVersion.replace(
+    /-(?:\d+[A-Za-z]+\d{1,3}|\d+[A-Za-z]+-\d{1,3}|[A-Za-z]+\d{3})$/,
+    '',
+  )
+  const searchName = nameWithoutCode.replace(/-/g, ' ').trim()
+
+  return `https://pkmncards.com/?s=${encodeURIComponent(searchName)}`
+}

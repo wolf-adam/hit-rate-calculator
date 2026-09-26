@@ -13,7 +13,12 @@ import {
   Typography,
 } from '@mui/material'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import { createCard, createRecord, fetchRecords } from './api'
+import {
+  createCard,
+  createRecord,
+  fetchRecords,
+  getApiErrorMessage,
+} from './api'
 import type {
   CardDraft,
   PlayerOption,
@@ -33,6 +38,7 @@ type DialogProps = {
   onClose: () => void
   onRecordsUpdated: (records: RecordRow[]) => void
   onError: (message: string) => void
+  onSuccess: (message: string) => void
 }
 
 type RecordForm = {
@@ -79,6 +85,7 @@ function DialogComponent({
   onClose,
   onRecordsUpdated,
   onError,
+  onSuccess,
 }: DialogProps) {
   const fields = rarityFields.filter((field) => (set[field.key] ?? 0) > 0)
   const [playerId, setPlayerId] = useState(0)
@@ -123,7 +130,6 @@ function DialogComponent({
       (record) => !record.in_product_id,
     )) return
     setSaving(true)
-    onError('')
     try {
       await Promise.all(records.map(async (record) => {
         const cardId = record.card.card_id ?? (await createCard({
@@ -150,10 +156,11 @@ function DialogComponent({
         })
       }))
       onRecordsUpdated(await fetchRecords(set.id))
+      onSuccess('Records created successfully.')
       resetForm()
       onClose()
-    } catch {
-      onError('Could not save all records.')
+    } catch (error) {
+      onError(getApiErrorMessage(error, 'Could not save all records.'))
     } finally {
       setSaving(false)
     }
@@ -238,6 +245,7 @@ function DialogComponent({
                 ))}
                 <CardEntry
                   value={record.card}
+                  lockMetadata
                   onChange={(card) => updateCard(index, card)}
                 />
               </div>

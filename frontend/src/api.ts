@@ -14,6 +14,14 @@ import type {
 const client = axios.create({ baseURL: '/api' })
 const exchangeClient = axios.create({ baseURL: 'https://api.frankfurter.dev/v1' })
 
+export function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const detail = error.response?.data?.detail
+    if (typeof detail === 'string' && detail.trim()) return detail
+  }
+  return fallback
+}
+
 export async function fetchSets(): Promise<SetOption[]> {
   const { data } = await client.get<SetOption[]>('/sets')
   return data

@@ -35,6 +35,7 @@ type RecordsTableProps = {
   currency: Currency
   products: ProductOption[]
   onRecordsUpdated: (records: RecordRow[]) => void
+  onNotify: (message: string, severity: 'success' | 'error') => void
 }
 
 const RecordsTable = ({
@@ -45,11 +46,18 @@ const RecordsTable = ({
   currency,
   products,
   onRecordsUpdated,
+  onNotify,
 }: RecordsTableProps) => {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
   const [editingRecord, setEditingRecord] = useState<RecordItem | null>(null)
   const [sortKey, setSortKey] = useState<keyof RecordRow | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+
+  async function refreshRecordsAfterModification() {
+    if (!selectedSet) return
+    const refreshedRecords = await fetchRecords(selectedSet.id)
+    onRecordsUpdated(refreshedRecords)
+  }
 
   const visibleColumns = columns.filter((column) => {
     switch (column.key) {
@@ -279,11 +287,9 @@ const RecordsTable = ({
         record={editingRecord}
         products={products}
         onClose={() => setEditingRecord(null)}
-        onSaved={async () => {
-          if (selectedSet) {
-            onRecordsUpdated(await fetchRecords(selectedSet.id))
-          }
-        }}
+        onError={(message) => onNotify(message, 'error')}
+        onSuccess={(message) => onNotify(message, 'success')}
+        onSaved={refreshRecordsAfterModification}
       />
     </TableContainer>
   )

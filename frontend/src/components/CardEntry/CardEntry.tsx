@@ -2,23 +2,25 @@ import { useEffect, useRef, useState } from 'react'
 import {
   Alert,
   CircularProgress,
+  Link,
   Stack,
   TextField,
   Typography,
 } from '@mui/material'
 import { lookupCard } from '../../api'
 import type { CardDraft } from '../../types'
-import { formatBiggestHitLink } from '../../utils'
+import { formatBiggestHitLink, getPkmnCardsSearchUrl } from '../../utils'
 import './CardEntry.scss'
 
 type CardEntryProps = {
   value: CardDraft
   onChange: (value: CardDraft) => void
+  lockMetadata?: boolean
 }
 
 type LookupState = 'idle' | 'loading' | 'found' | 'manual' | 'error'
 
-function CardEntry({ value, onChange }: CardEntryProps) {
+function CardEntry({ value, onChange, lockMetadata = false }: CardEntryProps) {
   const [lookupState, setLookupState] = useState<LookupState>('idle')
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
@@ -63,6 +65,7 @@ function CardEntry({ value, onChange }: CardEntryProps) {
   }, [value.link])
 
   const canEditMetadata = lookupState === 'manual' || lookupState === 'error'
+  const metadataDisabled = lockMetadata && !canEditMetadata
   const updateField = (field: keyof CardDraft, fieldValue: string) => {
     if (field === 'link') {
       onChange({
@@ -75,7 +78,7 @@ function CardEntry({ value, onChange }: CardEntryProps) {
       })
       return
     }
-    onChange({ ...value, card_id: undefined, [field]: fieldValue })
+    onChange({ ...value, [field]: fieldValue })
   }
 
   return (
@@ -102,16 +105,25 @@ function CardEntry({ value, onChange }: CardEntryProps) {
           label="Card name"
           required
           value={value.name}
-          disabled={!canEditMetadata}
-          slotProps={{ htmlInput: { readOnly: lookupState === 'found' } }}
+          disabled={metadataDisabled}
+          slotProps={{ htmlInput: { readOnly: lockMetadata && lookupState === 'found' } }}
           onChange={(event) => updateField('name', event.target.value)}
         />
         <TextField
           label="Image source"
           required
+          helperText={value.link ? (
+            <Link
+              href={getPkmnCardsSearchUrl(value.link)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Find card image on pkmncards.com
+            </Link>
+          ) : undefined}
           value={value.image_src}
-          disabled={!canEditMetadata}
-          slotProps={{ htmlInput: { readOnly: lookupState === 'found' } }}
+          disabled={metadataDisabled}
+          slotProps={{ htmlInput: { readOnly: lockMetadata && lookupState === 'found' } }}
           onChange={(event) => updateField('image_src', event.target.value)}
         />
         <TextField
@@ -119,9 +131,13 @@ function CardEntry({ value, onChange }: CardEntryProps) {
           required
           type="number"
           value={value.price}
-          disabled={!canEditMetadata}
+          disabled={metadataDisabled}
           slotProps={{
-            htmlInput: { min: 0, step: 0.1, readOnly: lookupState === 'found' },
+            htmlInput: {
+              min: 0,
+              step: 0.1,
+              readOnly: lockMetadata && lookupState === 'found',
+            },
           }}
           onChange={(event) => updateField('price', event.target.value)}
         />

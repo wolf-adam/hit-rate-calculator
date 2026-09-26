@@ -158,7 +158,7 @@ def aggregate_records(
                 "biggest_hit_src": record.biggest_hit_src,
                 "card_id": record.card_id,
                 "in_product_id": record.in_product_id,
-                "price": Decimal(record.price),
+                "price": Decimal(record.card.price),
             }
             for record in records
         ]
@@ -239,7 +239,8 @@ def get_records(
             select(Record)
             .join(Player, Record.player_id == Player.id)
             .where(Record.set_id == set_id)
-            .order_by(Record.player_id, Record.price.desc())
+            .join(Card, Record.card_id == Card.id)
+            .order_by(Record.player_id, Card.price.desc())
         )
     )
     if not records:
@@ -270,14 +271,16 @@ def update_record(
             status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
         )
 
-    update_values = payload.model_dump(exclude={"card_id"})
+    update_values = payload.model_dump(
+        exclude={
+            "card_id",
+            "biggest_hit_link",
+            "biggest_hit_src",
+            "price",
+        }
+    )
     if card is not None:
-        update_values.update(
-            biggest_hit_link=card.link,
-            biggest_hit_src=card.image_src,
-            price=card.price,
-            card_id=card.id,
-        )
+        update_values["card_id"] = card.id
     for field, value in update_values.items():
         setattr(record, field, value)
     db.commit()
@@ -317,7 +320,14 @@ def create_record(
             payload.price,
         )
 
-    record_data = payload.model_dump(exclude={"card_id"})
+    record_data = payload.model_dump(
+        exclude={
+            "card_id",
+            "biggest_hit_link",
+            "biggest_hit_src",
+            "price",
+        }
+    )
     record_data.update(
         card_id=card.id,
         biggest_hit_link=card.link,
@@ -334,7 +344,8 @@ def create_record(
                 Record.set_id == payload.set_id,
                 Record.player_id == payload.player_id,
             )
-            .order_by(Record.price.desc())
+            .join(Card, Record.card_id == Card.id)
+            .order_by(Card.price.desc())
         )
     )
     product_set = list(db.scalars(select(Product)))

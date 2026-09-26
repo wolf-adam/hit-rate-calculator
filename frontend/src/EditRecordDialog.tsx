@@ -9,7 +9,12 @@ import {
   Stack,
   TextField,
 } from '@mui/material'
-import { createCard, updateCard, updateRecord } from './api'
+import {
+  createCard,
+  getApiErrorMessage,
+  updateCard,
+  updateRecord,
+} from './api'
 import type {
   CardDraft,
   ProductOption,
@@ -26,6 +31,8 @@ type EditRecordDialogProps = {
   products: ProductOption[]
   onClose: () => void
   onSaved: () => Promise<void>
+  onError: (message: string) => void
+  onSuccess: (message: string) => void
 }
 
 type RecordForm = {
@@ -72,6 +79,8 @@ function EditRecordDialog({
   products,
   onClose,
   onSaved,
+  onError,
+  onSuccess,
 }: EditRecordDialogProps) {
   const [form, setForm] = useState<RecordForm | null>(null)
   const [saving, setSaving] = useState(false)
@@ -125,9 +134,12 @@ function EditRecordDialog({
       }
       await updateRecord(record.id, payload)
       await onSaved()
+      onSuccess('Record updated successfully.')
       onClose()
-    } catch {
-      setError('Could not update this record.')
+    } catch (error) {
+      const message = getApiErrorMessage(error, 'Could not update this record.')
+      setError(message)
+      onError(message)
     } finally {
       setSaving(false)
     }

@@ -67,18 +67,26 @@ class Record(Base):
     fr: Mapped[int] = mapped_column(default=0, nullable=False)
     hr: Mapped[int] = mapped_column(default=0, nullable=False)
     cc: Mapped[int] = mapped_column(default=0, nullable=False)
-    biggest_hit_link: Mapped[str] = mapped_column(String(500), nullable=False)
-    biggest_hit_src: Mapped[str] = mapped_column(String(500), nullable=False)
     card_id: Mapped[int] = mapped_column(
         ForeignKey("hit_rate_cards.id"), nullable=False, index=True
     )
     in_product_id: Mapped[int] = mapped_column(
         ForeignKey("hit_rate_products.id"), nullable=False, index=True
     )
-    price: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0.0, nullable=False)
-
     player: Mapped[Player] = relationship()
     set: Mapped[CardSet] = relationship()
     product: Mapped[Product] = relationship()
     in_product: Mapped[Product] = relationship()
     card: Mapped[Card] = relationship()
+
+    @property
+    def biggest_hit_link(self) -> str:
+        return self.card.link
+
+    @property
+    def biggest_hit_src(self) -> str:
+        return self.card.image_src
+
+    @property
+    def price(self) -> Decimal:
+        return self.card.price

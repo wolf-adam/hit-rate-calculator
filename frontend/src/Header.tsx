@@ -1,12 +1,15 @@
 import {
   Button,
+  IconButton,
   MenuItem,
   Select,
   Stack,
-  ToggleButton,
-  ToggleButtonGroup,
+  Menu,
   Typography,
 } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
+import QueryStatsOutlinedIcon from "@mui/icons-material/QueryStatsOutlined";
 import type { Currency } from "./storage";
 import type { SetOption } from "./types";
 import "./Header.scss";
@@ -20,6 +23,8 @@ type HeaderProps = {
   setDialogOpen: (open: boolean) => void;
   onSetChange: (setId: number) => void;
   onCurrencyChange: (currency: Currency) => void;
+  activeView: "summary" | "analytics";
+  onNavigate: (view: "summary" | "analytics") => void;
 };
 
 function Header({
@@ -31,23 +36,27 @@ function Header({
   setDialogOpen,
   onSetChange,
   onCurrencyChange,
+  activeView,
+  onNavigate,
 }: HeaderProps) {
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const canCreate = Boolean(selectedSetId && players.length && products.length);
-
-  const currencyOptions = [
-    { key: "EUR", "aria-label": "EUR" },
-    { key: "HUF", "aria-label": "HUF" },
-  ];
 
   return (
     <header className="page-header">
-      <Stack
-        className="header-toolbar"
-        direction={{ xs: "column", sm: "row" }}
-        alignItems={{ xs: "stretch", sm: "center" }}
-        justifyContent="space-between"
-        spacing={2}
-      >
+      <div className="header-toolbar">
+        <button className="brand-mark" type="button" onClick={() => onNavigate("summary")}>
+          <span className="brand-icon"><InsightsOutlinedIcon /></span>
+          <span className="brand-title">Hit Rate</span>
+        </button>
+        <nav className="desktop-nav" aria-label="Primary navigation">
+          <button className={activeView === "summary" ? "active" : ""} type="button" onClick={() => onNavigate("summary")}>
+            <QueryStatsOutlinedIcon /> Hall of Fame
+          </button>
+          <button className={activeView === "analytics" ? "active" : ""} type="button" onClick={() => onNavigate("analytics")}>
+            <InsightsOutlinedIcon /> Analytics
+          </button>
+        </nav>
         <div className="header-copy">
           <Select
             labelId="set-select-label"
@@ -64,11 +73,7 @@ function Header({
             Turn your openings into meaningful insights.
           </Typography>
         </div>
-        <Stack
-          className="header-actions"
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-        >
+        <div className="header-actions">
           <Button
             variant="contained"
             onClick={() => setDialogOpen(true)}
@@ -76,31 +81,19 @@ function Header({
           >
             + Add record
           </Button>
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={currency}
-            onChange={(_, nextCurrency: Currency | null) => {
-              if (nextCurrency) onCurrencyChange(nextCurrency);
-            }}
-            onClick={(event) => {
-              event.stopPropagation();
-              onCurrencyChange(currency === "EUR" ? "HUF" : "EUR");
-            }}
-            aria-label="display currency"
-          >
-            {currencyOptions.map((option) => (
-              <ToggleButton
-                key={option.key}
-                value={option.key}
-                aria-label={option["aria-label"]}
-              >
-                {option.key}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        </Stack>
-      </Stack>
+          <select className="currency-select" aria-label="display currency" value={currency} onChange={(event) => onCurrencyChange(event.target.value as Currency)}>
+            <option value="EUR">EUR</option>
+            <option value="HUF">HUF</option>
+          </select>
+          <IconButton className="mobile-menu-button" aria-label="Open navigation menu" onClick={(event) => setMenuAnchor(event.currentTarget)}>
+            <MenuIcon />
+          </IconButton>
+        </div>
+      </div>
+      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
+        <MenuItem onClick={() => { onNavigate("summary"); setMenuAnchor(null); }}>Hall of Fame</MenuItem>
+        <MenuItem onClick={() => { onNavigate("analytics"); setMenuAnchor(null); }}>Analytics</MenuItem>
+      </Menu>
     </header>
   );
 }
