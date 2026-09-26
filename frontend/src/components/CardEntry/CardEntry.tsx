@@ -8,6 +8,7 @@ import {
 } from '@mui/material'
 import { lookupCard } from '../../api'
 import type { CardDraft } from '../../types'
+import { formatBiggestHitLink } from '../../utils'
 import './CardEntry.scss'
 
 type CardEntryProps = {
@@ -45,7 +46,13 @@ function CardEntry({ value, onChange }: CardEntryProps) {
           setLookupState('found')
         })
         .catch(() => {
-          if (!cancelled) setLookupState('manual')
+          if (cancelled) return
+          onChangeRef.current({
+            ...value,
+            link,
+            name: value.name || formatBiggestHitLink(link),
+          })
+          setLookupState('manual')
         })
     }, 700)
 
@@ -57,6 +64,17 @@ function CardEntry({ value, onChange }: CardEntryProps) {
 
   const canEditMetadata = lookupState === 'manual' || lookupState === 'error'
   const updateField = (field: keyof CardDraft, fieldValue: string) => {
+    if (field === 'link') {
+      onChange({
+        ...value,
+        card_id: undefined,
+        link: fieldValue,
+        name: '',
+        image_src: '',
+        price: '',
+      })
+      return
+    }
     onChange({ ...value, card_id: undefined, [field]: fieldValue })
   }
 

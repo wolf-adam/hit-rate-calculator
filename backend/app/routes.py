@@ -34,6 +34,9 @@ def resolve_card(
     normalized_link = normalize_card_link(link)
     card = db.scalar(select(Card).where(Card.link == normalized_link))
     if card is not None:
+        canonical_name = card_name_from_link(normalized_link)
+        if card.name != canonical_name:
+            card.name = canonical_name
         return card
 
     card = Card(
@@ -57,6 +60,11 @@ def lookup_card(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
         )
+    canonical_name = card_name_from_link(card.link)
+    if card.name != canonical_name:
+        card.name = canonical_name
+        db.commit()
+        db.refresh(card)
     return card
 
 
@@ -72,10 +80,13 @@ def create_card(
         )
     )
     if existing is not None:
+        existing.name = card_name_from_link(normalized_link)
+        db.commit()
+        db.refresh(existing)
         return existing
 
     card = Card(
-        name=payload.name,
+        name=card_name_from_link(normalized_link),
         link=normalized_link,
         image_src=payload.image_src,
         price=payload.price,

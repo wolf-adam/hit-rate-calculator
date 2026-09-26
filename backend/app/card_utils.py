@@ -1,3 +1,4 @@
+import re
 from urllib.parse import unquote, urlsplit, urlunsplit
 
 
@@ -21,19 +22,25 @@ def normalize_card_link(link: str) -> str:
 def card_name_from_link(link: str) -> str:
     path = urlsplit(link).path
     last_segment = path.replace("\\", "/").rstrip("/").split("/")[-1]
-    decoded_name = unquote(last_segment).replace("-V", "-v")
+    decoded_name = unquote(last_segment)
+    decoded_name = re.sub(r"-V\d+(?=-|$)", "", decoded_name, flags=re.IGNORECASE)
     decoded_name = decoded_name.strip()
 
-    if "-v" in decoded_name.lower():
-        prefix, _, suffix = decoded_name.rpartition("-v")
-        if suffix.isdigit():
-            decoded_name = prefix
-
-    parts = decoded_name.rsplit("-", 2)
-    if len(parts) == 3 and parts[1] and parts[2].isdigit():
-        name, code, number = parts
-        if code[-1:].isdigit() or code.isalpha():
-            return f"{name.replace('-', ' ').strip()} ({code} {number})"
+    extended_code_match = re.match(
+        r"^(.+?)-(\d+[A-Za-z])([A-Za-z]*?)-?(\d{1,3})$",
+        decoded_name,
+    )
+    if extended_code_match:
+        name, code_prefix, code_suffix, code_digits = extended_code_match.groups()
+        code = f"{code_prefix} {code_suffix}" if code_suffix else code_prefix
+        if name.lower().endswith("-legend"):
+            return f"{name.replace('-', ' ')} {code_prefix}{code_suffix} {code_digits}"
+        return f"{name.replace('-', ' ').strip()} ({code} {code_digits})"
 
     normalized_name = decoded_name.replace("-", " ").strip()
-    return normalized_name or link
+    code_match = re.match(r"^(.*?)-?([A-Za-z]+)(\d{3})$", normalized_name)
+    if not code_match:
+        return normalized_name
+
+    name, code_letters, code_digits = code_match.groups()
+    return f"{name.strip()} ({code_letters} {code_digits})"

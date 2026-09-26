@@ -30,6 +30,9 @@ export const formatBiggestHitLink = (url: string): string => {
     const code = codeSuffix
       ? `${codePrefix} ${codeSuffix}`
       : codePrefix
+    if (name.toLowerCase().endsWith('-legend')) {
+      return `${name.replace(/-/g, ' ')} ${codePrefix}${codeSuffix} ${codeDigits}`
+    }
     return `${name.replace(/-/g, ' ').trim()} (${code} ${codeDigits})`
   }
 

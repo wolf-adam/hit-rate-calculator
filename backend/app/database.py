@@ -2,10 +2,11 @@ import os
 from collections.abc import Generator
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
-from .models import Base
+from .card_utils import card_name_from_link
+from .models import Base, Card
 
 load_dotenv()
 
@@ -25,3 +26,18 @@ def get_db() -> Generator[Session, None, None]:
 def initialize_database() -> None:
     """Create missing tables, including the current records table."""
     Base.metadata.create_all(bind=engine)
+    normalize_card_names()
+
+
+def normalize_card_names() -> None:
+    """Bring stored card names in line with the canonical link formatter."""
+    with SessionLocal() as session:
+        cards = session.scalars(select(Card)).all()
+        changed = False
+        for card in cards:
+            canonical_name = card_name_from_link(card.link)
+            if card.name != canonical_name:
+                card.name = canonical_name
+                changed = True
+        if changed:
+            session.commit()
