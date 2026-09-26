@@ -121,7 +121,17 @@ const RecordsTable = ({
           value = formatNumber(Number(record[column.key]))
       }
 
-    return <TableCell key={column.key}>{value}</TableCell>
+    return (
+      <TableCell
+        key={column.key}
+        align={column.key === 'total_boosters' ? 'center' : undefined}
+        className={column.key === 'in_product_id'
+          ? 'product-chip-cell'
+          : column.key === 'total_boosters' ? 'booster-count-cell' : undefined}
+      >
+        {value}
+      </TableCell>
+    )
   })
 
   const rarityColumns = visibleColumns.filter((column) =>
@@ -199,6 +209,10 @@ const RecordsTable = ({
             {visibleColumns.map((column) => (
               <TableCell
                 key={column.key}
+                align={column.key === 'total_boosters' ? 'center' : undefined}
+                className={column.key === 'in_product_id'
+                  ? 'product-column-header'
+                  : column.key === 'total_boosters' ? 'booster-count-cell' : undefined}
                 sortDirection={sortKey === column.key ? sortDirection : false}
               >
                 <TableSortLabel

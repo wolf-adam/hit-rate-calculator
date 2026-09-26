@@ -5,6 +5,7 @@
 
 .table-wrap .MuiTable-root {
   min-width: 900px;
+  table-layout: fixed;
 }
 
 .table-sort-reset {
@@ -22,12 +23,47 @@
   background-color: #e4eee5;
 }
 
+.table-wrap .name-column {
+  width: 180px;
+}
+
+.table-wrap .total_boosters-column {
+  width: 70px;
+}
+
+.table-wrap .ex-column,
+.table-wrap .ir-column,
+.table-wrap .sir-column,
+.table-wrap .cc-column,
+.table-wrap .fr-column,
+.table-wrap .hr-column {
+  width: 40px;
+}
+
+.table-wrap .total-column {
+  width: 70px;
+}
+
+.table-wrap .biggest_hit_link-column {
+  width: 180px;
+}
+
+.table-wrap .in_product_id-column {
+  width: 110px;
+}
+
 .table-wrap .price-column {
   width: 120px;
 }
 
-.table-wrap .total_boosters-column {
-  width: 50px;
+.booster-count-cell {
+  text-align: center;
+}
+
+.booster-count-cell .MuiTableSortLabel-root {
+  display: flex;
+  width: 100%;
+  justify-content: center;
 }
 
 .table-state {
@@ -74,46 +110,18 @@
   white-space: nowrap;
 }
 
+.product-chip-cell > .MuiChip-root {
+  display: flex;
+  width: fit-content;
+  margin-inline: auto;
+}
+
 .table-wrap .MuiTableBody-root .MuiTableRow-hover:hover > .MuiTableCell-root {
   background-color: #e4eee5;
-}
-
-.biggest-hit-preview {
-  max-width: none !important;
-  padding: 6px !important;
-  background: transparent !important;
-  box-shadow: 0 4px 18px rgba(37, 34, 31, 0.24);
-}
-
-.biggest-hit-preview-image {
-  display: block;
-  width: auto;
-  max-width: min(320px, 70vw);
-  max-height: min(360px, 65vh);
-  object-fit: contain;
 }
 
 .table-player-name {
   display: flex;
   align-items: center;
   gap: 4px;
-}
-
-.table-items-cell {
-  padding: 0 !important;
-  border-bottom: 0;
-}
-
-.table-items {
-  padding: 8px 16px 16px 48px;
-  background: rgba(245, 241, 232, 0.55);
-}
-
-.table-items .MuiTable-root {
-  min-width: 760px;
-}
-
-.table-items .MuiTableCell-head {
-  background: #e8e1d5;
-  color: #403b35;
 }
