@@ -2,10 +2,8 @@ import { Fragment, useState, type ReactNode } from 'react'
 import {
   Box,
   Chip,
-  Collapse,
   CircularProgress,
   IconButton,
-  Link,
   Table,
   TableBody,
   TableCell,
@@ -16,7 +14,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
@@ -26,6 +23,8 @@ import type { Currency } from './storage'
 import type { ProductOption, RecordItem, RecordRow, SetOption } from './types'
 import { formatNumber, formatPrice, formatBiggestHitLink } from './utils'
 import EditRecordDialog from './EditRecordDialog'
+import BiggestHitLink from './BiggestHitLink'
+import RecordItemsTable from './RecordItemsTable'
 import './RecordsTable.scss'
 
 type RecordsTableProps = {
@@ -36,37 +35,6 @@ type RecordsTableProps = {
   currency: Currency
   products: ProductOption[]
   onRecordsUpdated: (records: RecordRow[]) => void
-}
-
-function BiggestHitLink({
-  href,
-  imageSrc,
-}: {
-  href: string
-  imageSrc: string | null
-}) {
-  const label = formatBiggestHitLink(href)
-
-  return (
-    <Tooltip
-      title={imageSrc ? (
-        <Box
-          component="img"
-          className="biggest-hit-preview-image"
-          src={imageSrc}
-          alt={label}
-        />
-      ) : ''}
-      placement="right"
-      enterDelay={300}
-      disableHoverListener={!imageSrc}
-      slotProps={{ tooltip: { className: 'biggest-hit-preview' } }}
-    >
-      <Link href={href} target="_blank" rel="noopener noreferrer">
-        {label}
-      </Link>
-    </Tooltip>
-  )
 }
 
 const RecordsTable = ({
@@ -202,78 +170,6 @@ const RecordsTable = ({
       : 'desc')
   }
 
-  function renderItems(record: RecordRow) {
-    return (
-      <TableRow key={`items-${record.id}`}>
-        <TableCell colSpan={visibleColumns.length} className="table-items-cell">
-          <Collapse in={expandedRows.has(record.id)} timeout="auto" unmountOnExit>
-            <Box className="table-items">
-              <Table size="small" aria-label={`Individual records for ${record.name}`}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Date</TableCell>
-                    {rarityColumns.map((column) => (
-                      <TableCell key={column.key}>{column.label}</TableCell>
-                    ))}
-                    <TableCell>Product</TableCell>
-                    <TableCell>Biggest hit</TableCell>
-                    <TableCell>Price</TableCell>
-                    <TableCell aria-label="Actions" />
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {record.items.map((item) => {
-                    const product = products.find(
-                      (option) => option.id === item.in_product_id,
-                    )
-
-                    return (
-                      <TableRow key={item.id}>
-                        <TableCell>
-                          {new Date(item.date_created).toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </TableCell>
-                        {rarityColumns.map((column) => (
-                          <TableCell key={column.key}>
-                            {formatNumber(Number(item[column.key as keyof RecordItem]))}
-                          </TableCell>
-                        ))}
-                        <TableCell>{product?.name ?? item.in_product_id}</TableCell>
-                        <TableCell>
-                          <BiggestHitLink
-                            href={item.biggest_hit_link}
-                            imageSrc={item.biggest_hit_src}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {formatPrice(item.price, currency, exchangeRate)}
-                        </TableCell>
-                        <TableCell>
-                          <Tooltip title="Edit record">
-                            <IconButton
-                              size="small"
-                              aria-label={`Edit record ${item.id}`}
-                              onClick={() => setEditingRecord(item)}
-                            >
-                              <EditOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </Box>
-          </Collapse>
-        </TableCell>
-      </TableRow>
-    )
-  }
-
   return (
     <TableContainer className="table-wrap">
       {sortKey !== null && (
@@ -342,7 +238,16 @@ const RecordsTable = ({
                     expandedRows.has(record.id),
                   )}
                 </TableRow>
-                {renderItems(record)}
+                <RecordItemsTable
+                  record={record}
+                  expanded={expandedRows.has(record.id)}
+                  colSpan={visibleColumns.length}
+                  rarityColumns={rarityColumns}
+                  products={products}
+                  currency={currency}
+                  exchangeRate={exchangeRate}
+                  onEdit={setEditingRecord}
+                />
               </Fragment>
             )
           }) : (
