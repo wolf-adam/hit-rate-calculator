@@ -6,13 +6,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  MenuItem,
-  Select,
   Stack,
   TextField,
 } from '@mui/material'
 import { updateRecord } from './api'
 import type { ProductOption, RecordItem, RecordUpdate } from './types'
+import ProductSelect from './components/ProductSelect/ProductSelect'
+import './EditRecordDialog.scss'
 
 type EditRecordDialogProps = {
   record: RecordItem | null
@@ -107,23 +107,24 @@ function EditRecordDialog({
   }
 
   return (
-    <Dialog open={Boolean(record)} onClose={saving ? undefined : onClose} fullWidth maxWidth="sm">
+    <Dialog
+      className="edit-record-dialog"
+      open={Boolean(record)}
+      onClose={saving ? undefined : onClose}
+      fullWidth
+      maxWidth="sm"
+    >
       <DialogTitle>Edit record</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           {error && <Alert severity="error">{error}</Alert>}
-          <Select
+          <ProductSelect
+            onChange={(value) => updateField('in_product_id', value)}
+            products={products}
             aria-label="record product"
             value={form?.in_product_id ?? ''}
-            onChange={(event) => updateField('in_product_id', event.target.value)}
             fullWidth
-          >
-            {products.map((product) => (
-              <MenuItem key={product.id} value={String(product.id)}>
-                {product.name}
-              </MenuItem>
-            ))}
-          </Select>
+          />
           <div className="record-form">
             {rarityFields.map((field) => (
               <TextField

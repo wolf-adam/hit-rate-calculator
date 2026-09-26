@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import {
   Button,
-  Chip,
   Dialog as MuiDialog,
   DialogActions,
   DialogContent,
@@ -15,8 +14,8 @@ import {
 } from '@mui/material'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import { createRecord, fetchRecords } from './api'
-import { productColors } from './constants'
 import type { PlayerOption, ProductOption, RecordRow } from './types'
+import ProductSelect from './components/ProductSelect/ProductSelect'
 import './Dialog.scss'
 
 type DialogProps = {
@@ -183,30 +182,17 @@ function DialogComponent({
                 </IconButton>
               </Stack>
               <div className="record-form">
-                <Select
+                <ProductSelect
                   className="record-field record-field--product"
                   aria-label={`select product for record ${index + 1}`}
                   value={record.in_product_id || ''}
-                  onChange={(event) => updateRecord(
+                  onChange={(value) => updateRecord(
                     index,
                     'in_product_id',
-                    String(event.target.value),
+                    value,
                   )}
-                  displayEmpty
-                >
-                  <MenuItem value="" disabled>Select product</MenuItem>
-                  {products.map((product, productIndex) => (
-                    <MenuItem key={product.id} value={product.id}>
-                      <Chip
-                        label={product.name}
-                        color={productColors[
-                          productIndex % productColors.length
-                        ]}
-                        size="small"
-                      />
-                    </MenuItem>
-                  ))}
-                </Select>
+                  products={products}
+                />
                 {fields.map((field) => (
                   <TextField
                     key={field.key}

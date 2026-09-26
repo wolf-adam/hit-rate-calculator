@@ -4,6 +4,7 @@ import {
   Tooltip,
 } from '@mui/material'
 import { formatBiggestHitLink } from './utils'
+import './BiggestHitLink.scss'
 
 type BiggestHitLinkProps = {
   href: string

@@ -1,0 +1,27 @@
+.edit-record-dialog .record-form {
+  padding-top: 10px;
+}
+
+.edit-record-dialog .record-field--ex,
+.edit-record-dialog .record-field--ir,
+.edit-record-dialog .record-field--sir,
+.edit-record-dialog .record-field--cc,
+.edit-record-dialog .record-field--fr,
+.edit-record-dialog .record-field--hr,
+.edit-record-dialog .record-field--price {
+  grid-column: span 2;
+}
+
+.edit-record-dialog .record-field--biggest_hit_link {
+  grid-column: span 12;
+}
+
+.edit-record-dialog .record-field--biggest_hit_src {
+  grid-column: span 10;
+}
+
+@media (max-width: 640px) {
+  .edit-record-dialog .record-field {
+    grid-column: 1 / -1;
+  }
+}
