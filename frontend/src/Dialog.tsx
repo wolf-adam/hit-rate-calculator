@@ -17,6 +17,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import { createRecord, fetchRecords } from './api'
 import { productColors } from './constants'
 import type { PlayerOption, ProductOption, RecordRow } from './types'
+import './Dialog.scss'
 
 type DialogProps = {
   open: boolean
@@ -33,8 +34,11 @@ type RecordForm = {
   ex: string
   ir: string
   sir: string
-  special: string
+  cc: string
+  fr: string
+  hr: string
   biggest_hit_link: string
+  biggest_hit_src: string
   price: string
 }
 
@@ -43,8 +47,11 @@ const emptyRecord: RecordForm = {
   ex: '',
   ir: '',
   sir: '',
-  special: '',
+  cc: '',
+  fr: '',
+  hr: '',
   biggest_hit_link: '',
+  biggest_hit_src: '',
   price: '',
 }
 
@@ -52,8 +59,11 @@ const fields = [
     { key: 'ex', label: 'Ex', type: 'number' },
     { key: 'ir', label: 'IR', type: 'number' },
     { key: 'sir', label: 'SIR', type: 'number' },
-    { key: 'special', label: 'Special', type: 'number' },
+    { key: 'cc', label: 'CC', type: 'number' },
+    { key: 'fr', label: 'FR', type: 'number' },
+    { key: 'hr', label: 'HR', type: 'number' },
     { key: 'biggest_hit_link', label: "Biggest hit's link", type: 'text' },
+    { key: 'biggest_hit_src', label: "Biggest hit's image URL", type: 'text' },
     { key: 'price', label: 'Price (€)', type: 'number' },
 ] as const
 
@@ -109,7 +119,9 @@ function DialogComponent({
         ex: Number(record.ex),
         ir: Number(record.ir),
         sir: Number(record.sir),
-        special: Number(record.special),
+        cc: Number(record.cc),
+        fr: Number(record.fr),
+        hr: Number(record.hr),
         price: Number(record.price),
         date_created: new Date().toISOString(),
         player_id: playerId,
@@ -151,16 +163,6 @@ function DialogComponent({
               </MenuItem>
             ))}
           </Select>
-          <Button
-            variant="outlined"
-              onClick={() => setRecords((current) => [
-                ...current,
-                emptyRecord,
-              ])}
-            disabled={saving}
-          >
-            Add another record
-          </Button>
           {records.map((record, index) => (
             <Stack className="record-item" key={index} spacing={1.5}>
               <Stack direction="row" justifyContent="space-between">
@@ -180,35 +182,35 @@ function DialogComponent({
                   <DeleteOutlineIcon />
                 </IconButton>
               </Stack>
+              <div className="record-form">
                 <Select
-                    aria-label={`select product for record ${index + 1}`}
-                    value={record.in_product_id || ''}
-                    onChange={(event) => 
-                        updateRecord(
-                            index,
-                            'in_product_id',
-                            String(event.target.value),
-                    )}
-                    displayEmpty
-                    fullWidth
+                  className="record-field record-field--product"
+                  aria-label={`select product for record ${index + 1}`}
+                  value={record.in_product_id || ''}
+                  onChange={(event) => updateRecord(
+                    index,
+                    'in_product_id',
+                    String(event.target.value),
+                  )}
+                  displayEmpty
                 >
-                    <MenuItem value="" disabled>Select product</MenuItem>
-                    {products.map((product, productIndex) => (
+                  <MenuItem value="" disabled>Select product</MenuItem>
+                  {products.map((product, productIndex) => (
                     <MenuItem key={product.id} value={product.id}>
-                        <Chip
+                      <Chip
                         label={product.name}
                         color={productColors[
-                            productIndex % productColors.length
+                          productIndex % productColors.length
                         ]}
                         size="small"
-                        />
+                      />
                     </MenuItem>
-                    ))}
+                  ))}
                 </Select>
-              <div className="record-form">
                 {fields.map((field) => (
                   <TextField
                     key={field.key}
+                    className={`record-field record-field--${field.key}`}
                     label={field.label}
                     type={field.type}
                     slotProps={field.type === 'number'
@@ -230,6 +232,17 @@ function DialogComponent({
               </div>
             </Stack>
           ))}
+
+          <Button
+            variant="outlined"
+              onClick={() => setRecords((current) => [
+                ...current,
+                emptyRecord,
+              ])}
+            disabled={saving}
+          >
+            Add another record
+          </Button>
         </Stack>
       </DialogContent>
       <DialogActions>

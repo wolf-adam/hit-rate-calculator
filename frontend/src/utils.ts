@@ -1,0 +1,43 @@
+import { Currency } from "./storage"
+
+export const formatNumber = (value: number): string => {
+  return value.toLocaleString(undefined, { maximumFractionDigits: 2 })
+}
+
+export const formatPrice = (
+  value: number,
+  currency: Currency,
+  rate: number,
+): string => {
+  const convertedValue = currency === 'HUF' ? Math.round(value * rate) : value
+  return `${formatNumber(convertedValue)} ${currency === 'HUF' ? 'Ft' : '€'}`
+}
+
+export const formatBiggestHitLink = (url: string): string => {
+  const path = url.split(/[?#]/, 1)[0]
+  const lastSegment = path.split(/[\\/]/).pop() ?? url
+  const decodedName = decodeURIComponent(lastSegment)
+    .replace(/-V\d+(?=-|$)/i, '')
+    .trim()
+  const extendedCodeMatch = decodedName.match(
+    /^(.+?)-(\d+[A-Za-z])([A-Za-z]*?)-?(\d{1,3})$/,
+  )
+
+  if (extendedCodeMatch) {
+    const [
+      , name, codePrefix, codeSuffix, codeDigits,
+    ] = extendedCodeMatch
+    const code = codeSuffix
+      ? `${codePrefix} ${codeSuffix}`
+      : codePrefix
+    return `${name.replace(/-/g, ' ').trim()} (${code} ${codeDigits})`
+  }
+
+  const normalizedName = decodedName.replace(/-/g, ' ')
+  const codeMatch = normalizedName.match(/^(.*?)-?([A-Za-z]+)(\d{3})$/)
+
+  if (!codeMatch) return normalizedName
+
+  const [, name, codeLetters, codeDigits] = codeMatch
+  return `${name.trim()} (${codeLetters} ${codeDigits})`
+}

@@ -1,0 +1,18 @@
+.creation-panel {
+  min-height: 240px;
+}
+
+@media (max-width: 640px) {
+  .toolbar {
+    padding: 18px;
+  }
+
+  .creation-panel {
+    min-height: 180px;
+  }
+
+  .creation-panel__content {
+    min-height: 180px;
+    padding: 20px;
+  }
+}

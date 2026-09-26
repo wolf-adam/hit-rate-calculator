@@ -15,12 +15,12 @@ class CardSet(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     short_name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     long_name: Mapped[str] = mapped_column(String(240), nullable=False)
-    ex: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0.1, nullable=False)
-    ir: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=1.0, nullable=False)
-    sir: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=20.0, nullable=False)
-    special: Mapped[Decimal] = mapped_column(
-        Numeric(10, 2), default=10.0, nullable=False
-    )
+    ex: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    ir: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    sir: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    fr: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    hr: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    cc: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
 class Player(Base):
     __tablename__ = "hit_rate_players"
@@ -52,11 +52,17 @@ class Record(Base):
     ex: Mapped[int] = mapped_column(default=0, nullable=False)
     ir: Mapped[int] = mapped_column(default=0, nullable=False)
     sir: Mapped[int] = mapped_column(default=0, nullable=False)
-    special: Mapped[int] = mapped_column(default=0, nullable=False)
+    fr: Mapped[int] = mapped_column(default=0, nullable=False)
+    hr: Mapped[int] = mapped_column(default=0, nullable=False)
+    cc: Mapped[int] = mapped_column(default=0, nullable=False)
     biggest_hit_link: Mapped[str] = mapped_column(String(240), nullable=False)
+    biggest_hit_src: Mapped[str | None] = mapped_column(String(500))
     in_product_id: Mapped[int] = mapped_column(
         ForeignKey("hit_rate_products.id"), nullable=False, index=True
     )
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0.0, nullable=False)
 
     player: Mapped[Player] = relationship()
+    set: Mapped[CardSet] = relationship()
+    product: Mapped[Product] = relationship()
+    in_product: Mapped[Product] = relationship()

@@ -3,7 +3,9 @@ import type {
   NewRecord,
   PlayerOption,
   ProductOption,
+  RecordItem,
   RecordRow,
+  RecordUpdate,
   SetOption,
 } from './types'
 
@@ -38,6 +40,14 @@ export async function createRecord(
   record: NewRecord,
 ): Promise<RecordRow> {
   const { data } = await client.post<RecordRow>('/records', record)
+  return data
+}
+
+export async function updateRecord(
+  recordId: number,
+  record: RecordUpdate,
+): Promise<RecordItem> {
+  const { data } = await client.put<RecordItem>(`/records/${recordId}`, record)
   return data
 }
 

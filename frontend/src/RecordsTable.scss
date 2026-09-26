@@ -1,0 +1,119 @@
+.table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrap .MuiTable-root {
+  min-width: 900px;
+}
+
+.table-sort-reset {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.table-sort-reset .MuiIconButton-root {
+  color: #99482f;
+}
+
+.table-sort-reset .MuiIconButton-root:hover {
+  background-color: #e4eee5;
+}
+
+.table-wrap .price-column {
+  width: 120px;
+}
+
+.table-wrap .total_boosters-column {
+  width: 50px;
+}
+
+.table-state {
+  display: flex;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.table-wrap .MuiTableCell-head {
+  background: #25221f;
+  color: #fffdf8;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table-wrap .MuiTableCell-head .MuiTableSortLabel-root {
+  color: #fffdf8;
+  transition: color 120ms ease;
+}
+
+.table-wrap .MuiTableCell-head .MuiTableSortLabel-root:hover {
+  color: #c8dcc9;
+}
+
+.table-wrap .MuiTableCell-head .MuiTableSortLabel-icon {
+  color: #e58b68 !important;
+}
+
+.table-wrap .MuiTableCell-head .MuiTableSortLabel-root.Mui-active {
+  color: #f0a27f;
+}
+
+.table-wrap .MuiTableCell-head .MuiTableSortLabel-root.Mui-active .MuiTableSortLabel-icon {
+  color: #f0a27f !important;
+}
+
+.table-wrap .MuiTableCell-body {
+  color: #403b35;
+  white-space: nowrap;
+}
+
+.table-wrap .MuiTableBody-root .MuiTableRow-hover:hover > .MuiTableCell-root {
+  background-color: #e4eee5;
+}
+
+.biggest-hit-preview {
+  max-width: none !important;
+  padding: 6px !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 4px 18px rgba(37, 34, 31, 0.24);
+}
+
+.biggest-hit-preview-image {
+  display: block;
+  width: auto;
+  max-width: min(320px, 70vw);
+  max-height: min(360px, 65vh);
+  object-fit: contain;
+}
+
+.table-player-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.table-items-cell {
+  padding: 0 !important;
+  border-bottom: 0;
+}
+
+.table-items {
+  padding: 8px 16px 16px 48px;
+  background: rgba(245, 241, 232, 0.55);
+}
+
+.table-items .MuiTable-root {
+  min-width: 760px;
+}
+
+.table-items .MuiTableCell-head {
+  background: #e8e1d5;
+  color: #403b35;
+}

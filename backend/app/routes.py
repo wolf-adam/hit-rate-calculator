@@ -11,7 +11,9 @@ from .schemas import (
     PlayerResponse,
     ProductResponse,
     RecordCreate,
+    RecordItemResponse,
     RecordResponse,
+    RecordUpdate,
     SetResponse,
 )
 
@@ -52,8 +54,11 @@ def aggregate_records(
                 "ex": Decimal(record.ex),
                 "ir": Decimal(record.ir),
                 "sir": Decimal(record.sir),
-                "special": Decimal(record.special),
+                "cc": Decimal(record.cc),
+                "fr": Decimal(record.fr),
+                "hr": Decimal(record.hr),
                 "biggest_hit_link": record.biggest_hit_link,
+                "biggest_hit_src": record.biggest_hit_src,
                 "in_product_id": record.in_product_id,
                 "price": Decimal(record.price),
             }
@@ -68,17 +73,25 @@ def aggregate_records(
         product.id: product.booster_volume for product in product_set
     }
     responses: list[RecordResponse] = []
+    items_by_player: dict[int, list[RecordItemResponse]] = {}
+    for record in records:
+        items_by_player.setdefault(record.player_id, []).append(
+            RecordItemResponse.model_validate(record)
+        )
+
     weights = {
         "ex": card_set.ex,
         "ir": card_set.ir,
         "sir": card_set.sir,
-        "special": card_set.special,
+        "fr": card_set.fr,
+        "hr": card_set.hr,
+        "cc": card_set.cc,
     }
 
     for (player_id, name), player_frame in grouped:
         rarity_totals = {
             field: Decimal(player_frame[field].sum())
-            for field in ("ex", "ir", "sir", "special")
+            for field in ("ex", "ir", "sir", "cc", "fr", "hr")
         }
         top_record = player_frame.iloc[0]
         total = sum(
@@ -96,9 +109,11 @@ def aggregate_records(
                 **rarity_totals,
                 total_boosters=total_boosters,
                 biggest_hit_link=str(top_record["biggest_hit_link"]),
+                biggest_hit_src=top_record["biggest_hit_src"],
                 in_product_id=int(top_record["in_product_id"]),
                 price=Decimal(top_record["price"]),
                 total=total,
+                items=items_by_player[int(player_id)],
             )
         )
     return responses
@@ -130,6 +145,29 @@ def get_records(
         return []
 
     return aggregate_records(records, card_set, product_set)
+
+
+@router.put("/records/{record_id}", response_model=RecordItemResponse)
+def update_record(
+    record_id: int,
+    payload: RecordUpdate,
+    db: Session = Depends(get_db),
+) -> Record:
+    record = db.get(Record, record_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Record not found"
+        )
+    if db.get(Product, payload.in_product_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
+        )
+
+    for field, value in payload.model_dump().items():
+        setattr(record, field, value)
+    db.commit()
+    db.refresh(record)
+    return record
 
 @router.post(
     "/records", response_model=RecordResponse, status_code=status.HTTP_201_CREATED

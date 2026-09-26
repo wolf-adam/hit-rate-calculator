@@ -1,0 +1,87 @@
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 1rem;
+
+  .MuiButton-root {
+    padding: 12px 22px;
+    border-radius: 8px;
+    background: #be5c3c;
+    box-shadow: none;
+    font-weight: 700;
+  }
+
+  .MuiButton-root:hover {
+    background: #99482f;
+    box-shadow: none;
+  }
+
+  .Mui-selected {
+    color: white !important;
+    background-color: #686663 !important;
+  }
+
+  .MuiSelect-select {
+    font-size: clamp(1.8rem, 6vw, 3rem);
+    font-weight: 600;
+    padding-left: 0px;
+    min-height: 0rem !important;
+  }
+
+  .MuiSelect-icon {
+    width: 2em;
+    height: 2em;
+    top: calc(50% - 1.1em);
+  }
+
+  .MuiOutlinedInput-notchedOutline {
+    border: none;
+  }
+}
+
+.header-toolbar {
+  width: 100%;
+}
+
+.header-copy,
+.header-actions {
+  min-width: 0;
+}
+
+.header-actions > * {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .page-header h1 {
+    font-size: 2.3rem;
+  }
+
+  .page-header .MuiSelect-select {
+    width: 100%;
+  }
+
+  .header-actions > * {
+    width: 100%;
+  }
+
+  .header-actions .MuiToggleButtonGroup-root {
+    width: 100%;
+  }
+
+  .header-actions .MuiToggleButton-root {
+    flex: 1;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-header h1 {
+    font-size: 1.9rem;
+  }
+}

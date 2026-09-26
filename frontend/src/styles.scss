@@ -1,41 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
 
 :root {
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   color: #25221f;
   background: #f5f1e8;
   font-synthesis: none;
 }
 
-* { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; background: radial-gradient(circle at 90% 0%, #e7eee4 0, transparent 35%), #f5f1e8; }
-button, input, select { font: inherit; }
-
-.app-shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 64px 0 80px; }
-.page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 36px; }
-.page-header h1, .content-panel h6 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
-.eyebrow { color: #be5c3c; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; }
-.subtitle { margin-top: 8px; color: #736e66; }
-.page-header .MuiButton-root { padding: 12px 22px; border-radius: 8px; background: #be5c3c; box-shadow: none; font-weight: 700; }
-.page-header .MuiButton-root:hover { background: #99482f; box-shadow: none; }
-.content-panel { overflow: hidden; border: 1px solid #ded8cc; border-radius: 10px; background: rgba(255, 253, 248, 0.78); }
-.toolbar { padding: 22px 24px; border-bottom: 1px solid #ded8cc; }
-.table-wrap { max-width: 100%; }
-.table-wrap .price-column { width: 120px; }
-.table-wrap .total_boosters-column { width: 50px; }
-.table-state { display: flex; min-height: 220px; align-items: center; justify-content: center; gap: 12px; }
-.table-wrap .MuiTableCell-head { background: #25221f; color: #fffdf8; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
-.table-wrap .MuiTableCell-body { color: #403b35; white-space: nowrap; }
-.table-wrap .MuiTableRow-hover:hover { background: #f1e8da; }
-.record-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding-top: 10px; }
-.record-item { padding: 16px; border: 1px solid #ded8cc; border-radius: 8px; background: rgba(245, 241, 232, 0.55); }
-
-@media (max-width: 640px) {
-  .app-shell { width: min(100% - 24px, 1180px); padding-top: 32px; }
-  .page-header { align-items: flex-start; flex-direction: column; margin-bottom: 24px; }
-  .page-header h1 { font-size: 2.3rem; }
-  .page-header .MuiButton-root { width: 100%; }
-  .toolbar { padding: 18px; }
-  .record-form { grid-template-columns: 1fr; }
-  .record-form .MuiTextField-root:first-child { grid-column: auto; }
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 90% 0%, #e7eee4 0, transparent 35%), #f5f1e8;
+}
+button,
+input,
+select {
+  font: inherit;
 }

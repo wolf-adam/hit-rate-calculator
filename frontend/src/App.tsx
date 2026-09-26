@@ -1,18 +1,12 @@
-import { useEffect, useState } from 'react'
-import {
-  Alert,
-  Button,
-  CircularProgress,
-  Paper,
-  Typography,
-} from '@mui/material'
+import { useEffect, useState } from "react";
+import { Alert, Tab, Tabs } from "@mui/material";
 import {
   fetchEurToHufRate,
   fetchPlayers,
   fetchProducts,
   fetchRecords,
   fetchSets,
-} from './api'
+} from "./api";
 import {
   readCachedExchangeRate,
   readCachedProducts,
@@ -24,197 +18,193 @@ import {
   writeCachedSets,
   writeCurrency,
   writeSelectedSet,
-} from './storage'
-import type { Currency } from './storage'
+} from "./storage";
+import type { Currency } from "./storage";
 import type {
   PlayerOption,
   ProductOption,
   RecordRow,
   SetOption,
-} from './types'
-import Dialog from './Dialog'
-import RecordsTable from './RecordsTable'
-import RecordsToolbar from './RecordsToolbar'
+} from "./types";
+import { TAB_NAMES } from "./constants";
+import SummaryView from "./SummaryView";
+import AnalyticsView from "./AnalyticsView";
+import Dialog from "./Dialog";
+import Header from "./Header";
+import "./App.scss";
 
 function App() {
-  const [currency, setCurrency] = useState<Currency>(
-    () => readCurrency(),
-  )
-  const [exchangeRate, setExchangeRate] = useState<number | null>(
-    null,
-  )
-  const [sets, setSets] = useState<SetOption[]>(
-    () => readCachedSets(),
-  )
-  const [players, setPlayers] = useState<PlayerOption[]>([])
-  const [products, setProducts] = useState<ProductOption[]>(
-    () => readCachedProducts(),
-  )
-  const [selectedSetId, setSelectedSetId] = useState<number | ''>(
-    () => readSelectedSet() ?? '',
-  )
-  const [records, setRecords] = useState<RecordRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [currency, setCurrency] = useState<Currency>(() => readCurrency());
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
+  const [sets, setSets] = useState<SetOption[]>(() => readCachedSets());
+  const [players, setPlayers] = useState<PlayerOption[]>([]);
+  const [products, setProducts] = useState<ProductOption[]>(() =>
+    readCachedProducts(),
+  );
+  const [selectedSetId, setSelectedSetId] = useState<number | "">(
+    () => readSelectedSet() ?? "",
+  );
+  const [records, setRecords] = useState<RecordRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [activeView, setActiveView] = useState(TAB_NAMES.SUMMARY);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     async function loadPlayers() {
       try {
-        setPlayers(await fetchPlayers())
+        setPlayers(await fetchPlayers());
       } catch {
-        setError('Could not load players.')
+        setError("Could not load players.");
       }
     }
-    void loadPlayers()
-  }, [])
+    void loadPlayers();
+  }, []);
 
   useEffect(() => {
     async function loadProducts() {
-      const cachedProducts = readCachedProducts()
+      const cachedProducts = readCachedProducts();
       if (cachedProducts.length) {
-        setProducts(cachedProducts)
-        return
+        setProducts(cachedProducts);
+        return;
       }
       try {
-        const availableProducts = await fetchProducts()
-        setProducts(availableProducts)
-        writeCachedProducts(availableProducts)
+        const availableProducts = await fetchProducts();
+        setProducts(availableProducts);
+        writeCachedProducts(availableProducts);
       } catch {
-        setError('Could not load products.')
+        setError("Could not load products.");
       }
     }
-    void loadProducts()
-  }, [])
+    void loadProducts();
+  }, []);
 
   useEffect(() => {
     async function loadExchangeRate() {
-      const cached = readCachedExchangeRate()
+      const cached = readCachedExchangeRate();
       const cacheIsFresh =
-        cached && Date.now() - cached.fetchedAt < 60 * 60 * 1000
+        cached && Date.now() - cached.fetchedAt < 60 * 60 * 1000;
 
       if (cacheIsFresh) {
-        setExchangeRate(cached.rate)
-        return
+        setExchangeRate(cached.rate);
+        return;
       }
 
       try {
-        const rate = await fetchEurToHufRate()
-        setExchangeRate(rate)
-        writeCachedExchangeRate(rate)
+        const rate = await fetchEurToHufRate();
+        setExchangeRate(rate);
+        writeCachedExchangeRate(rate);
       } catch {
-        setError('Could not load the EUR to HUF exchange rate.')
+        setError("Could not load the EUR to HUF exchange rate.");
       }
     }
-    void loadExchangeRate()
+    void loadExchangeRate();
 
-    const refreshTimer = window.setInterval(() => {
-      void loadExchangeRate()
-    }, 60 * 60 * 1000)
+    const refreshTimer = window.setInterval(
+      () => {
+        void loadExchangeRate();
+      },
+      60 * 60 * 1000,
+    );
 
-    return () => window.clearInterval(refreshTimer)
-  }, [])
+    return () => window.clearInterval(refreshTimer);
+  }, []);
 
   useEffect(() => {
     async function loadSets() {
       try {
-        const cachedSets = readCachedSets()
-        const availableSets = cachedSets.length
-          ? cachedSets
-          : await fetchSets()
-        if (!cachedSets.length) writeCachedSets(availableSets)
-        setSets(availableSets)
-        const cachedSelection = readSelectedSet()
+        const availableSets = await fetchSets();
+        writeCachedSets(availableSets);
+        setSets(availableSets);
+        const cachedSelection = readSelectedSet();
         const nextSetId = availableSets.some(
           (set) => set.id === cachedSelection,
         )
           ? cachedSelection!
-          : availableSets[0]?.id ?? ''
-        setSelectedSetId(nextSetId)
-        if (nextSetId) writeSelectedSet(nextSetId)
+          : (availableSets[0]?.id ?? "");
+        setSelectedSetId(nextSetId);
+        if (nextSetId) writeSelectedSet(nextSetId);
       } catch {
-        setError('Could not load sets. Check that the API is running.')
+        setError("Could not load sets. Check that the API is running.");
       }
     }
-    void loadSets()
-  }, [])
+    void loadSets();
+  }, []);
 
   useEffect(() => {
     if (!selectedSetId) {
-      setRecords([])
-      setLoading(false)
-      return
+      setRecords([]);
+      setLoading(false);
+      return;
     }
-    const setId = selectedSetId
+    const setId = selectedSetId;
 
     async function loadRecords() {
-      setLoading(true)
-      setError('')
+      setLoading(true);
+      setError("");
       try {
-        setRecords(await fetchRecords(setId))
+        setRecords(await fetchRecords(setId));
       } catch {
-        setError('Could not load records for this set.')
+        setError("Could not load records for this set.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    void loadRecords()
-  }, [selectedSetId])
+    void loadRecords();
+  }, [selectedSetId]);
 
   function handleSetChange(setId: number) {
-    setSelectedSetId(setId)
-    writeSelectedSet(setId)
+    setSelectedSetId(setId);
+    writeSelectedSet(setId);
   }
+
+  const selectedSet = sets.find((set) => set.id === selectedSetId);
 
   return (
     <main className="app-shell">
-      <header className="page-header">
-        <div>
-          <Typography className="eyebrow">COLLECTION ANALYTICS</Typography>
-          <Typography component="h1" variant="h3">Hit rate calculator</Typography>
-          <Typography className="subtitle">Compare set performance at a glance.</Typography>
-        </div>
-        <Button
-          variant="contained"
-          onClick={() => setDialogOpen(true)}
-          disabled={
-            !selectedSetId || !players.length || !products.length
-          }
-        >
-          Add record
-        </Button>
-      </header>
+      <Header
+        sets={sets}
+        selectedSetId={selectedSetId}
+        currency={currency}
+        players={players}
+        products={products}
+        setDialogOpen={setDialogOpen}
+        onSetChange={handleSetChange}
+        onCurrencyChange={(nextCurrency) => {
+          setCurrency(nextCurrency);
+          writeCurrency(nextCurrency);
+        }}
+      />
 
-      {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" onClose={() => setError("")}>
+          {error}
+        </Alert>
+      )}
 
-      <Paper className="content-panel" elevation={0}>
-        <RecordsToolbar
-          sets={sets}
-          selectedSetId={selectedSetId}
+      <Tabs
+        value={activeView}
+        onChange={(_, nextView: string) => setActiveView(nextView)}
+        aria-label="calculator views"
+      >
+        {Object.values(TAB_NAMES).map((tabName) => (
+          <Tab key={tabName} value={tabName} label={tabName} />
+        ))}
+      </Tabs>
+
+      {activeView === TAB_NAMES.SUMMARY ? (
+        <SummaryView
+          selectedSet={selectedSet}
           currency={currency}
-          onSetChange={handleSetChange}
-          onCurrencyChange={(nextCurrency) => {
-            setCurrency(nextCurrency)
-            writeCurrency(nextCurrency)
-          }}
+          exchangeRate={exchangeRate}
+          records={records}
+          loading={loading}
+          products={products}
+          onRecordsUpdated={setRecords}
         />
-
-        {exchangeRate === null ? (
-          <div className="table-state">
-            <CircularProgress size={26} />
-            <Typography color="text.secondary">Loading exchange rate…</Typography>
-          </div>
-        ) : (
-          <RecordsTable
-            records={records}
-            loading={loading}
-            exchangeRate={exchangeRate}
-            currency={currency}
-            products={products}
-          />
-        )}
-      </Paper>
-
+      ) : (
+        <AnalyticsView />
+      )}
       {selectedSetId && (
         <Dialog
           open={dialogOpen}
@@ -227,7 +217,7 @@ function App() {
         />
       )}
     </main>
-  )
+  );
 }
 
-export default App
+export default App;
