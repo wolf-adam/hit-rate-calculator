@@ -22,6 +22,15 @@ function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
 }
 
+const rarityFullNames: Record<string, string> = {
+  ex: "EX",
+  ir: "Illustration Rare",
+  sir: "Special Illustration Rare",
+  fr: "Futuristic Rare",
+  hr: "Hyper Rare",
+  cc: "Classic Collections",
+};
+
 function DonutChart({
   data,
   centerLabel,
@@ -252,7 +261,7 @@ function AnalyticsView({
                 <div className="analytics-rate-row" key={item.key}>
                   <div className="analytics-rate-row__label">
                     <i style={{ backgroundColor: item.color }} />
-                    <strong>{item.label}</strong>
+                    <strong>{rarityFullNames[item.key] ?? item.label}</strong>
                     <span>{item.count.toLocaleString()} hits</span>
                   </div>
                   <div className="analytics-rate-row__measure">

@@ -226,15 +226,15 @@
 
 .analytics-rates-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .analytics-rate-row {
   display: grid;
-  gap: 14px;
-  padding: 16px;
+  gap: 10px;
+  padding: 12px;
   border: 1px solid #ded8cc;
   border-top: 4px solid #8d8880;
   border-radius: 10px;
@@ -306,7 +306,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid #e2ddd4;
 }
 
