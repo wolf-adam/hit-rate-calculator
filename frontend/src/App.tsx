@@ -225,7 +225,11 @@ function App() {
           onNotify={notify}
         />
       ) : (
-        <AnalyticsView />
+        <AnalyticsView
+          selectedSet={selectedSet}
+          records={records}
+          loading={loading}
+        />
       )}
       {selectedSet && (
         <Dialog
