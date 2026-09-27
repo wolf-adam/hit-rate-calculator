@@ -67,8 +67,8 @@ class Record(Base):
     fr: Mapped[int] = mapped_column(default=0, nullable=False)
     hr: Mapped[int] = mapped_column(default=0, nullable=False)
     cc: Mapped[int] = mapped_column(default=0, nullable=False)
-    card_id: Mapped[int] = mapped_column(
-        ForeignKey("hit_rate_cards.id"), nullable=False, index=True
+    card_id: Mapped[int | None] = mapped_column(
+        ForeignKey("hit_rate_cards.id"), nullable=True, index=True
     )
     in_product_id: Mapped[int] = mapped_column(
         ForeignKey("hit_rate_products.id"), nullable=False, index=True
@@ -80,13 +80,13 @@ class Record(Base):
     card: Mapped[Card] = relationship()
 
     @property
-    def biggest_hit_link(self) -> str:
-        return self.card.link
+    def biggest_hit_link(self) -> str | None:
+        return self.card.link if self.card is not None else None
 
     @property
-    def biggest_hit_src(self) -> str:
-        return self.card.image_src
+    def biggest_hit_src(self) -> str | None:
+        return self.card.image_src if self.card is not None else None
 
     @property
     def price(self) -> Decimal:
-        return self.card.price
+        return self.card.price if self.card is not None else Decimal("0")

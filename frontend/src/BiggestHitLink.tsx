@@ -7,11 +7,12 @@ import { formatBiggestHitLink } from './utils'
 import './BiggestHitLink.scss'
 
 type BiggestHitLinkProps = {
-  href: string
+  href: string | null
   imageSrc: string | null
 }
 
 function BiggestHitLink({ href, imageSrc }: BiggestHitLinkProps) {
+  if (!href) return null
   const label = formatBiggestHitLink(href)
 
   return (

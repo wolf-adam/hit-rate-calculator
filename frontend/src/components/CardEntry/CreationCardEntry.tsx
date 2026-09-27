@@ -100,7 +100,7 @@ function CreationCardEntry({
         }}
         noOptionsText="No matching cards"
         renderInput={(params) => (
-          <TextField {...params} label="Card name" required />
+          <TextField {...params} label="Card name" />
         )}
       />
       {cardsLoading && (
@@ -119,7 +119,6 @@ function CreationCardEntry({
       <div className="creation-card-entry__fields">
         <TextField
           label="Card link"
-          required
           value={value.link}
           disabled={metadataDisabled}
           onChange={(event) => updateField('link', event.target.value)}
@@ -137,14 +136,12 @@ function CreationCardEntry({
         />
         <TextField
           label="Image source"
-          required
           value={value.image_src}
           disabled={metadataDisabled}
           onChange={(event) => updateField('image_src', event.target.value)}
         />
         <TextField
           label="Price (€)"
-          required
           type="number"
           value={value.price}
           disabled={metadataDisabled}

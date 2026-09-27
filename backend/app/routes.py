@@ -164,7 +164,7 @@ def aggregate_records(
                 "biggest_hit_src": record.biggest_hit_src,
                 "card_id": record.card_id,
                 "in_product_id": record.in_product_id,
-                "price": Decimal(record.card.price),
+                "price": Decimal(record.price),
             }
             for record in records
         ]
@@ -212,7 +212,7 @@ def aggregate_records(
                 name=str(name),
                 **rarity_totals,
                 total_boosters=total_boosters,
-                biggest_hit_link=str(top_record["biggest_hit_link"]),
+                biggest_hit_link=top_record["biggest_hit_link"],
                 biggest_hit_src=top_record["biggest_hit_src"],
                 card_id=int(top_record["card_id"])
                 if pd.notna(top_record["card_id"])
@@ -245,8 +245,8 @@ def get_records(
             select(Record)
             .join(Player, Record.player_id == Player.id)
             .where(Record.set_id == set_id)
-            .join(Card, Record.card_id == Card.id)
-            .order_by(Record.player_id, Card.price.desc())
+            .outerjoin(Card, Record.card_id == Card.id)
+            .order_by(Record.player_id, Card.price.desc().nullslast())
         )
     )
     if not records:
@@ -382,7 +382,7 @@ def create_record(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
         )
-    if card is None:
+    if card is None and payload.biggest_hit_link:
         card = resolve_card(
             db,
             payload.biggest_hit_link,
@@ -398,7 +398,7 @@ def create_record(
             "price",
         }
     )
-    record_data["card_id"] = card.id
+    record_data["card_id"] = card.id if card is not None else None
     record = Record(**record_data)
     db.add(record)
     db.commit()
@@ -409,8 +409,8 @@ def create_record(
                 Record.set_id == payload.set_id,
                 Record.player_id == payload.player_id,
             )
-            .join(Card, Record.card_id == Card.id)
-            .order_by(Card.price.desc())
+            .outerjoin(Card, Record.card_id == Card.id)
+            .order_by(Card.price.desc().nullslast())
         )
     )
     product_set = list(db.scalars(select(Product)))

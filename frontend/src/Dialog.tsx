@@ -159,23 +159,31 @@ function DialogComponent({
     setSaving(true)
     try {
       await Promise.all(records.map(async (record) => {
-        const cardId = record.card.card_id ?? (await createCard({
-          name: record.card.name,
-          link: record.card.link,
-          image_src: record.card.image_src,
-          price: Number(record.card.price),
-        })).id
+        const hasManualCard = Boolean(
+          record.card.name
+          && record.card.link
+          && record.card.image_src
+          && record.card.price,
+        )
+        const cardId = record.card.card_id ?? (hasManualCard
+          ? (await createCard({
+            name: record.card.name,
+            link: record.card.link,
+            image_src: record.card.image_src,
+            price: Number(record.card.price),
+          })).id
+          : undefined)
         return createRecord({
           card_id: cardId,
-          biggest_hit_link: record.card.link,
-          biggest_hit_src: record.card.image_src,
+          biggest_hit_link: record.card.link || null,
+          biggest_hit_src: record.card.image_src || null,
           ex: Number(record.ex),
           ir: Number(record.ir),
           sir: Number(record.sir),
           cc: Number(record.cc),
           fr: Number(record.fr),
           hr: Number(record.hr),
-          price: Number(record.card.price),
+          price: Number(record.card.price) || 0,
           date_created: new Date().toISOString(),
           player_id: playerId,
           set_id: set.id,
@@ -311,13 +319,9 @@ function DialogComponent({
         <Button
           variant="contained"
           onClick={() => void handleSubmit()}
-          disabled={modalLoading || saving || !playerId || records.some((record) => (
-            !record.in_product_id
-            || !record.card.link
-            || !record.card.name
-            || !record.card.image_src
-            || !record.card.price
-          ))}
+          disabled={modalLoading || saving || !playerId || records.some(
+            (record) => !record.in_product_id,
+          )}
         >
           {saving ? 'Saving…' : `Save ${records.length} record${records.length === 1 ? '' : 's'}`}
         </Button>

@@ -53,7 +53,7 @@ class CardResponse(BaseModel):
     name: str = Field(min_length=1, max_length=240)
     link: str = Field(min_length=1, max_length=500)
     image_src: str = Field(min_length=1, max_length=500)
-    price: Decimal = Field(ge=0)
+    price: Decimal = Field(default=0, ge=0)
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -81,7 +81,7 @@ class RecordCreate(BaseModel):
     fr: int = 0
     hr: int = 0
     card_id: int | None = Field(default=None, gt=0)
-    biggest_hit_link: str = Field(min_length=1, max_length=500)
+    biggest_hit_link: str | None = Field(default=None, max_length=500)
     biggest_hit_src: str | None = Field(default=None, max_length=500)
     price: Decimal = Field(ge=0)
 
@@ -95,7 +95,7 @@ class RecordUpdate(BaseModel):
     cc: int = Field(ge=0)
     fr: int = Field(ge=0)
     hr: int = Field(ge=0)
-    biggest_hit_link: str = Field(min_length=1, max_length=500)
+    biggest_hit_link: str | None = Field(default=None, max_length=500)
     biggest_hit_src: str | None = Field(default=None, max_length=500)
     price: Decimal = Field(ge=0)
 
@@ -111,7 +111,7 @@ class RecordItemResponse(BaseModel):
     cc: int
     fr: int
     hr: int
-    biggest_hit_link: str = Field(min_length=1, max_length=500)
+    biggest_hit_link: str | None = Field(default=None, max_length=500)
     biggest_hit_src: str | None = None
     price: Decimal
     card: CardResponse | None = None
@@ -129,7 +129,7 @@ class RecordResponse(BaseModel):
     cc: int
     fr: int
     hr: int
-    biggest_hit_link: str = Field(min_length=1, max_length=500)
+    biggest_hit_link: str | None = Field(default=None, max_length=500)
     biggest_hit_src: str | None = None
     in_product_id: int = Field(gt=0)
     price: Decimal = Field(ge=0)

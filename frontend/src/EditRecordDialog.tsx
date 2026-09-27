@@ -69,7 +69,7 @@ function toForm(record: RecordItem): RecordForm {
     card: {
       card_id: record.card_id,
       name: record.card?.name ?? formatBiggestHitLink(record.biggest_hit_link),
-      link: record.card?.link ?? record.biggest_hit_link,
+      link: record.card?.link ?? record.biggest_hit_link ?? '',
       image_src: record.card?.image_src ?? record.biggest_hit_src ?? '',
       price: String(record.card?.price ?? record.price),
     },

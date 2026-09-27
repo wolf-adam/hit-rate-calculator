@@ -13,7 +13,8 @@ export const formatPrice = (
   return `${formatNumber(convertedValue)} ${currency === 'HUF' ? 'Ft' : '€'}`
 }
 
-export const formatBiggestHitLink = (url: string): string => {
+export const formatBiggestHitLink = (url: string | null): string => {
+  if (!url) return ''
   const path = url.split(/[?#]/, 1)[0]
   const lastSegment = path.split(/[\\/]/).pop() ?? url
   const decodedName = decodeURIComponent(lastSegment)

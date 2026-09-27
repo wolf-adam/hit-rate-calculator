@@ -67,7 +67,7 @@ export type RecordRow = {
   fr?: number
   hr?: number
   total: number
-  biggest_hit_link: string
+  biggest_hit_link: string | null
   biggest_hit_src: string | null
   in_product_id: number
   price: number
@@ -87,7 +87,7 @@ export type RecordItem = {
   cc: number
   fr: number
   hr: number
-  biggest_hit_link: string
+  biggest_hit_link: string | null
   biggest_hit_src: string | null
   price: number
   card?: Card
