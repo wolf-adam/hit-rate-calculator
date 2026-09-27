@@ -48,8 +48,10 @@ function Header({
     <header className="page-header">
       <div className="header-toolbar">
         <button className="brand-mark" type="button" onClick={() => onNavigate("summary")}>
-          <span className="brand-icon"><InsightsOutlinedIcon /></span>
-          <span className="brand-title">Hit Rate</span>
+          <span className="brand-icon">
+            <img src="/favicon.svg" alt="" />
+          </span>
+          <span className="brand-title">Hit Rate Calculator</span>
         </button>
         <nav className="desktop-nav" aria-label="Primary navigation">
           <button className={activeView === "summary" ? "active" : ""} type="button" onClick={() => onNavigate("summary")}>

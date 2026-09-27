@@ -73,13 +73,14 @@
   width: 38px;
   height: 38px;
   place-items: center;
+  overflow: hidden;
   border-radius: 11px;
-  background: #be5c3c;
-  color: #fffdf8;
 }
 
-.brand-icon svg {
-  font-size: 22px;
+.brand-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .desktop-nav {
@@ -119,7 +120,7 @@
 }
 
 .header-copy .MuiInputBase-root {
-  width: min(27rem, 100%);
+  width: min(24rem, 100%);
 }
 
 .header-actions {
