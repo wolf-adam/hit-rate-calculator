@@ -74,12 +74,12 @@ class RecordCreate(BaseModel):
     set_id: int = Field(gt=0)
     player_id: int = Field(gt=0)
     in_product_id: int = Field(gt=0)
-    ex: int
-    ir: int
-    sir: int
-    cc: int
-    fr: int
-    hr: int
+    ex: int = 0
+    ir: int = 0
+    sir: int = 0
+    cc: int = 0
+    fr: int = 0
+    hr: int = 0
     card_id: int | None = Field(default=None, gt=0)
     biggest_hit_link: str = Field(min_length=1, max_length=500)
     biggest_hit_src: str | None = Field(default=None, max_length=500)
