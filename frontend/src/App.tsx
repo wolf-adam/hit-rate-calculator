@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Snackbar } from "@mui/material";
 import {
   fetchEurToHufRate,
+  fetchCards,
   fetchPlayers,
   fetchProductAnalytics,
   fetchProducts,
@@ -26,6 +27,7 @@ import type {
   ProductOption,
   RecordRow,
   ProductAnalytics,
+  Card,
   SetOption,
 } from "./types";
 import SummaryView from "./SummaryView";
@@ -52,6 +54,8 @@ function App() {
   const [products, setProducts] = useState<ProductOption[]>(() =>
     readCachedProducts(),
   );
+  const [cards, setCards] = useState<Card[]>([]);
+  const [cardsLoading, setCardsLoading] = useState(true);
   const [selectedSetId, setSelectedSetId] = useState<number | "">(
     () => readSelectedSet() ?? "",
   );
@@ -65,6 +69,19 @@ function App() {
     getViewFromPath(window.location.pathname),
   );
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  useEffect(() => {
+    async function loadCards() {
+      try {
+        setCards(await fetchCards());
+      } catch {
+        setError("Could not load cards.");
+      } finally {
+        setCardsLoading(false);
+      }
+    }
+    void loadCards();
+  }, []);
 
   useEffect(() => {
     async function loadPlayers() {
@@ -267,6 +284,8 @@ function App() {
           set={selectedSet}
           players={players}
           products={products}
+          cards={cards}
+          cardsLoading={cardsLoading}
           onClose={() => setDialogOpen(false)}
           onRecordsUpdated={setRecords}
           onError={(message) => notify(message, "error")}

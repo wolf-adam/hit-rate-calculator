@@ -18,6 +18,7 @@ export const TAB_NAMES = {
 export const columns: Array<{
   key: keyof RecordRow;
   label: string;
+  fullName?: string;
   className: string;
 }> = [
   { key: "name", label: "Name", className: "name-column" },
@@ -26,12 +27,12 @@ export const columns: Array<{
     label: "Booster #",
     className: "total_boosters-column",
   },
-  { key: "ex", label: "Ex", className: "ex-column" },
-  { key: "ir", label: "IR", className: "ir-column" },
-  { key: "sir", label: "SIR", className: "sir-column" },
-  { key: "cc", label: "CC", className: "cc-column" },
-  { key: "fr", label: "FR", className: "fr-column" },
-  { key: "hr", label: "HR", className: "hr-column" },
+  { key: "ex", label: "EX", fullName: "EX", className: "ex-column" },
+  { key: "ir", label: "IR", fullName: "Illustration Rare", className: "ir-column" },
+  { key: "sir", label: "SIR", fullName: "Special Illustration Rare", className: "sir-column" },
+  { key: "cc", label: "CC", fullName: "Classic Collections", className: "cc-column" },
+  { key: "fr", label: "FR", fullName: "Futuristic Rare", className: "fr-column" },
+  { key: "hr", label: "HR", fullName: "Hyper Rare", className: "hr-column" },
   { key: "total", label: "Total", className: "total-column" },
   {
     key: "biggest_hit_link",

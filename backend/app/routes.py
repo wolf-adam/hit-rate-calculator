@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .card_utils import card_name_from_link, normalize_card_link
@@ -53,20 +53,21 @@ def resolve_card(
 
 @router.get("/cards/lookup", response_model=CardResponse)
 def lookup_card(
-    link: str = Query(..., min_length=1), db: Session = Depends(get_db)
+    name: str = Query(..., min_length=1), db: Session = Depends(get_db)
 ) -> Card:
-    normalized_link = normalize_card_link(link)
-    card = db.scalar(select(Card).where(Card.link == normalized_link))
+    card = db.scalar(
+        select(Card).where(func.lower(Card.name) == name.strip().lower())
+    )
     if card is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
         )
-    canonical_name = card_name_from_link(card.link)
-    if card.name != canonical_name:
-        card.name = canonical_name
-        db.commit()
-        db.refresh(card)
     return card
+
+
+@router.get("/cards", response_model=list[CardResponse])
+def get_cards(db: Session = Depends(get_db)) -> list[Card]:
+    return list(db.scalars(select(Card).order_by(Card.name.asc())))
 
 
 @router.post("/cards", response_model=CardResponse, status_code=status.HTTP_201_CREATED)
@@ -77,11 +78,15 @@ def create_card(
     normalized_link = normalize_card_link(payload.link)
     existing = db.scalar(
         select(Card).where(
-            (Card.link == normalized_link) | (Card.name == payload.name)
+            (Card.link == normalized_link)
+            | (func.lower(Card.name) == payload.name.strip().lower())
         )
     )
     if existing is not None:
-        existing.name = card_name_from_link(normalized_link)
+        existing.name = payload.name.strip()
+        existing.link = normalized_link
+        existing.image_src = payload.image_src
+        existing.price = payload.price
         db.commit()
         db.refresh(existing)
         return existing
@@ -250,6 +255,13 @@ def get_records(
     return aggregate_records(records, card_set, product_set)
 
 
+@router.get("/records/modal", response_model=list[RecordResponse])
+def get_records_for_modal(
+    set_id: int = Query(..., gt=0), db: Session = Depends(get_db)
+) -> list[RecordResponse]:
+    return get_records(set_id, db)
+
+
 @router.get(
     "/product-analytics", response_model=list[ProductAnalyticsResponse]
 )
@@ -386,12 +398,7 @@ def create_record(
             "price",
         }
     )
-    record_data.update(
-        card_id=card.id,
-        biggest_hit_link=card.link,
-        biggest_hit_src=card.image_src,
-        price=card.price,
-    )
+    record_data["card_id"] = card.id
     record = Record(**record_data)
     db.add(record)
     db.commit()

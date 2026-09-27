@@ -6,6 +6,7 @@ import {
   Typography,
 } from "@mui/material";
 import { buildAnalyticsData, type AnalyticsData } from "./analytics";
+import { columns } from "./constants";
 import type { ProductAnalytics, RecordRow, SetOption } from "./types";
 import "./AnalyticsView.scss";
 
@@ -21,15 +22,6 @@ type AnalyticsViewProps = {
 function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
 }
-
-const rarityFullNames: Record<string, string> = {
-  ex: "EX",
-  ir: "Illustration Rare",
-  sir: "Special Illustration Rare",
-  fr: "Futuristic Rare",
-  hr: "Hyper Rare",
-  cc: "Classic Collections",
-};
 
 function DonutChart({
   data,
@@ -90,7 +82,7 @@ function DistributionLegend({ data }: { data: AnalyticsData["rarities"] }) {
         <div className="analytics-legend__row" key={item.key}>
           <span className="analytics-legend__label">
             <i style={{ backgroundColor: item.color }} />
-            {item.label}
+            {columns.find((column) => column.key === item.key)?.fullName ?? item.label}
           </span>
           <span>{item.count.toLocaleString()}</span>
           <span>{formatPercent(item.observedRate)}</span>
@@ -261,7 +253,7 @@ function AnalyticsView({
                 <div className="analytics-rate-row" key={item.key}>
                   <div className="analytics-rate-row__label">
                     <i style={{ backgroundColor: item.color }} />
-                    <strong>{rarityFullNames[item.key] ?? item.label}</strong>
+                    <strong>{columns.find((column) => column.key === item.key)?.fullName ?? item.label}</strong>
                     <span>{item.count.toLocaleString()} hits</span>
                   </div>
                   <div className="analytics-rate-row__measure">
@@ -341,15 +333,15 @@ function AnalyticsView({
               >
                 <div className="product-card__glow" />
                 <div className="product-card__header">
-                  <div>
+                  <div className="product-card__header__container">
                     <span className="product-card__eyebrow">
                       Product sample
                     </span>
-                    <h3>{product.name}</h3>
+                    <span className="product-card__volume">
+                        {product.booster_volume} boosters
+                    </span>
                   </div>
-                  <span className="product-card__volume">
-                    {product.booster_volume} boosters
-                  </span>
+                  <h4>{product.name}</h4>
                 </div>
                 <div className="product-card__stats">
                   <div>
@@ -392,7 +384,7 @@ function AnalyticsView({
                         <div>
                           <span>
                             <i style={{ backgroundColor: item.color }} />
-                            {item.label}
+                            {columns.find((column) => column.key === item.key)?.fullName ?? item.label}
                           </span>
                           <strong>
                             {formatPercent(product.rarity_rates[item.key] ?? 0)}

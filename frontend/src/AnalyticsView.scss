@@ -420,7 +420,17 @@
 .product-card--2 .product-card__glow { background: #d8c7f2; }
 .product-card--3 .product-card__glow { background: #f4d49b; }
 
-.product-card__header,
+.product-card__header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  h4 {
+    margin: 4px 0 0;
+  }
+}
+
+.product-card__header__container,
 .product-card__stats,
 .product-card__rate > div:first-child,
 .product-card__rarity > div {

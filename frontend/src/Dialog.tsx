@@ -1,6 +1,7 @@
-import { type CSSProperties, useState } from 'react'
+import { type CSSProperties, useEffect, useState } from 'react'
 import {
   Button,
+  CircularProgress,
   Dialog as MuiDialog,
   DialogActions,
   DialogContent,
@@ -16,11 +17,12 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import {
   createCard,
   createRecord,
-  fetchRecords,
+  fetchRecordsForModal,
   getApiErrorMessage,
 } from './api'
 import type {
   CardDraft,
+  Card,
   PlayerOption,
   ProductOption,
   RecordRow,
@@ -35,6 +37,8 @@ type DialogProps = {
   set: SetOption
   players: PlayerOption[]
   products: ProductOption[]
+  cards: Card[]
+  cardsLoading: boolean
   onClose: () => void
   onRecordsUpdated: (records: RecordRow[]) => void
   onError: (message: string) => void
@@ -82,6 +86,8 @@ function DialogComponent({
   set,
   players,
   products,
+  cards,
+  cardsLoading,
   onClose,
   onRecordsUpdated,
   onError,
@@ -91,6 +97,27 @@ function DialogComponent({
   const [playerId, setPlayerId] = useState(0)
   const [records, setRecords] = useState<RecordForm[]>([emptyRecord])
   const [saving, setSaving] = useState(false)
+  const [modalLoading, setModalLoading] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    let cancelled = false
+    setModalLoading(true)
+    void fetchRecordsForModal(set.id)
+      .then((latestRecords) => {
+        if (!cancelled) onRecordsUpdated(latestRecords)
+      })
+      .catch(() => {
+        if (!cancelled) onError('Could not refresh records before creating.')
+      })
+      .finally(() => {
+        if (!cancelled) setModalLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [open, set.id])
 
   function updateRecord(
     index: number,
@@ -155,7 +182,7 @@ function DialogComponent({
           in_product_id: record.in_product_id,
         })
       }))
-      onRecordsUpdated(await fetchRecords(set.id))
+      onRecordsUpdated(await fetchRecordsForModal(set.id))
       onSuccess('Records created successfully.')
       resetForm()
       onClose()
@@ -179,6 +206,7 @@ function DialogComponent({
           <Select
             aria-label="select player"
             value={playerId || ''}
+            disabled={modalLoading || saving}
               onChange={(event) =>
                 setPlayerId(Number(event.target.value))
               }
@@ -192,6 +220,14 @@ function DialogComponent({
               </MenuItem>
             ))}
           </Select>
+          {modalLoading && (
+            <div className="card-entry-status">
+              <CircularProgress size={18} />
+              <Typography variant="body2" color="text.secondary">
+                Loading current records before opening the entry form...
+              </Typography>
+            </div>
+          )}
           {records.map((record, index) => (
             <Stack className="record-item" key={index} spacing={1.5}>
               <Stack direction="row" justifyContent="space-between">
@@ -227,6 +263,7 @@ function DialogComponent({
                     value,
                   )}
                   products={products}
+                  disabled={modalLoading || cardsLoading || saving}
                 />
                 {fields.map((field) => (
                   <TextField
@@ -235,6 +272,7 @@ function DialogComponent({
                     label={field.label}
                     type={field.type}
                     slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                    disabled={modalLoading || cardsLoading || saving}
                     value={record[field.key]}
                     onChange={(event) => updateRecord(
                       index,
@@ -246,6 +284,9 @@ function DialogComponent({
                 <CardEntry
                   value={record.card}
                   lockMetadata
+                  cards={cards}
+                  cardsLoading={cardsLoading}
+                  disabled={modalLoading || cardsLoading || saving}
                   onChange={(card) => updateCard(index, card)}
                 />
               </div>
@@ -258,20 +299,20 @@ function DialogComponent({
                 ...current,
                 emptyRecord,
               ])}
-            disabled={saving}
+            disabled={modalLoading || saving}
           >
             Add another record
           </Button>
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={closeDialog} disabled={saving}>
+        <Button onClick={closeDialog} disabled={modalLoading || saving}>
           Cancel
         </Button>
         <Button
           variant="contained"
           onClick={() => void handleSubmit()}
-          disabled={saving || !playerId || records.some((record) => (
+          disabled={modalLoading || saving || !playerId || records.some((record) => (
             !record.in_product_id
             || !record.card.link
             || !record.card.name

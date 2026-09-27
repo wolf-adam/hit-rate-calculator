@@ -38,10 +38,8 @@ export async function fetchProducts(): Promise<ProductOption[]> {
   return data
 }
 
-export async function lookupCard(link: string): Promise<Card> {
-  const { data } = await client.get<Card>('/cards/lookup', {
-    params: { link },
-  })
+export async function fetchCards(): Promise<Card[]> {
+  const { data } = await client.get<Card[]>('/cards')
   return data
 }
 
@@ -64,6 +62,15 @@ export async function fetchRecords(
   setId: number,
 ): Promise<RecordRow[]> {
   const { data } = await client.get<RecordRow[]>('/records', {
+    params: { set_id: setId },
+  })
+  return data
+}
+
+export async function fetchRecordsForModal(
+  setId: number,
+): Promise<RecordRow[]> {
+  const { data } = await client.get<RecordRow[]>('/records/modal', {
     params: { set_id: setId },
   })
   return data

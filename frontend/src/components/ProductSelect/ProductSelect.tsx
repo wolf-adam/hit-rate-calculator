@@ -1,12 +1,8 @@
 import {
+  Autocomplete,
   Chip,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  type SelectProps,
+  TextField,
 } from '@mui/material'
-import { useId } from 'react'
 import { productColors } from '../../constants'
 import type { ProductOption } from '../../types'
 import './ProductSelect.scss'
@@ -18,6 +14,7 @@ type ProductSelectProps = {
   className?: string
   fullWidth?: boolean
   label?: string
+  disabled?: boolean
   'aria-label': string
 }
 
@@ -28,12 +25,12 @@ function ProductSelect({
   className,
   fullWidth,
   label = 'Product',
+  disabled = false,
   'aria-label': ariaLabel,
 }: ProductSelectProps) {
-  const labelId = useId()
-  const getProduct = (productId: unknown) => products.find(
-    (product) => String(product.id) === String(productId),
-  )
+  const selectedProduct = products.find(
+    (product) => String(product.id) === String(value),
+  ) ?? null
 
   const renderProduct = (product: ProductOption) => {
     const productIndex = products.findIndex((option) => option.id === product.id)
@@ -48,29 +45,30 @@ function ProductSelect({
   }
 
   return (
-    <FormControl className={className} fullWidth={fullWidth}>
-      <InputLabel id={labelId}>{label}</InputLabel>
-      <Select
-        labelId={labelId}
-        label={label}
-        aria-label={ariaLabel}
-        value={value}
-        onChange={(event) => onChange(String(event.target.value))}
-        renderValue={(selected: SelectProps['value']) => {
-          const product = getProduct(selected)
-          return product ? (
-            <span className="product-select-value">{renderProduct(product)}</span>
-          ) : null
-        }}
-      >
-        <MenuItem value="" disabled>Select product</MenuItem>
-        {products.map((product) => (
-          <MenuItem key={product.id} value={product.id}>
-            {renderProduct(product)}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+    <Autocomplete
+      className={className}
+      fullWidth={fullWidth}
+      disabled={disabled}
+      options={products}
+      value={selectedProduct}
+      onChange={(_, product) => onChange(product ? String(product.id) : '')}
+      getOptionLabel={(product) => product.name}
+      isOptionEqualToValue={(option, selected) => option.id === selected.id}
+      renderOption={(props, product) => (
+        <li {...props} key={product.id}>
+          {renderProduct(product)}
+        </li>
+      )}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          required
+          inputProps={{ ...params.inputProps, 'aria-label': ariaLabel }}
+        />
+      )}
+      noOptionsText="No matching products"
+    />
   )
 }
 
