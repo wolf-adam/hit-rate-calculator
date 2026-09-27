@@ -52,7 +52,11 @@ export const getPkmnCardsSearchUrl = (cardmarketUrl: string): string => {
   const decodedName = decodeURIComponent(lastSegment).trim()
   const versionMatch = decodedName.match(/^(.+?)-V\d+(?:-|$)/i)
   const nameBeforeVersion = versionMatch?.[1] ?? decodedName
-  const nameWithoutCode = nameBeforeVersion.replace(
+  const nameWithoutEdition = nameBeforeVersion.replace(
+    /\s+LV\.X\s*\([^)]*\)\s*$/i,
+    '',
+  )
+  const nameWithoutCode = nameWithoutEdition.replace(
     /-(?:\d+[A-Za-z]+\d{1,3}|\d+[A-Za-z]+-\d{1,3}|[A-Za-z]+\d{3})$/,
     '',
   )
