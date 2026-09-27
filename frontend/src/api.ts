@@ -5,6 +5,7 @@ import type {
   CardDraft,
   PlayerOption,
   ProductOption,
+  ProductAnalytics,
   RecordItem,
   RecordRow,
   RecordUpdate,
@@ -63,6 +64,15 @@ export async function fetchRecords(
   setId: number,
 ): Promise<RecordRow[]> {
   const { data } = await client.get<RecordRow[]>('/records', {
+    params: { set_id: setId },
+  })
+  return data
+}
+
+export async function fetchProductAnalytics(
+  setId: number,
+): Promise<ProductAnalytics[]> {
+  const { data } = await client.get<ProductAnalytics[]>('/product-analytics', {
     params: { set_id: setId },
   })
   return data

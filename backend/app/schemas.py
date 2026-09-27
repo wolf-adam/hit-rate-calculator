@@ -28,6 +28,26 @@ class ProductResponse(BaseModel):
     name: str
 
 
+class ProductAnalyticsResponse(BaseModel):
+    id: int
+    name: str
+    booster_volume: int
+    opening_count: int
+    total_boosters: int
+    ex: int
+    ir: int
+    sir: int
+    fr: int
+    hr: int
+    cc: int
+    rarity_rates: dict[str, float]
+    total_hits: int
+    no_hit_boosters: int
+    hit_rate: float
+    no_hit_rate: float
+    one_in_x: float | None = None
+
+
 class CardResponse(BaseModel):
     id: int
     name: str = Field(min_length=1, max_length=240)

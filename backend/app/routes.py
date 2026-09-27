@@ -13,6 +13,7 @@ from .schemas import (
     CardResponse,
     CardUpdate,
     PlayerResponse,
+    ProductAnalyticsResponse,
     ProductResponse,
     RecordCreate,
     RecordItemResponse,
@@ -247,6 +248,63 @@ def get_records(
         return []
 
     return aggregate_records(records, card_set, product_set)
+
+
+@router.get(
+    "/product-analytics", response_model=list[ProductAnalyticsResponse]
+)
+def get_product_analytics(
+    set_id: int = Query(..., gt=0), db: Session = Depends(get_db)
+) -> list[ProductAnalyticsResponse]:
+    if db.get(CardSet, set_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Set not found"
+        )
+
+    records = list(
+        db.scalars(
+            select(Record)
+            .join(Product, Record.in_product_id == Product.id)
+            .where(Record.set_id == set_id)
+            .order_by(Product.booster_volume.asc(), Product.name.asc(), Record.id.asc())
+        )
+    )
+    products = {record.in_product.id: record.in_product for record in records}
+    grouped: dict[int, list[Record]] = {}
+    for record in records:
+        grouped.setdefault(record.in_product_id, []).append(record)
+
+    responses: list[ProductAnalyticsResponse] = []
+    rarity_fields = ("ex", "ir", "sir", "fr", "hr", "cc")
+    for product_id, product_records in grouped.items():
+        product = products[product_id]
+        counts = {
+            field: sum(getattr(record, field) for record in product_records)
+            for field in rarity_fields
+        }
+        opening_count = len(product_records)
+        total_boosters = opening_count * product.booster_volume
+        total_hits = sum(counts.values())
+        no_hit_boosters = max(total_boosters - total_hits, 0)
+        def rate(value: int) -> float:
+            return value / total_boosters * 100 if total_boosters else 0.0
+        responses.append(
+            ProductAnalyticsResponse(
+                id=product.id,
+                name=product.name,
+                booster_volume=product.booster_volume,
+                opening_count=opening_count,
+                total_boosters=total_boosters,
+                **counts,
+                rarity_rates={field: rate(counts[field]) for field in rarity_fields},
+                total_hits=total_hits,
+                no_hit_boosters=no_hit_boosters,
+                hit_rate=rate(total_hits),
+                no_hit_rate=rate(no_hit_boosters),
+                one_in_x=total_boosters / total_hits if total_hits else None,
+            )
+        )
+    return responses
 
 
 @router.put("/records/{record_id}", response_model=RecordItemResponse)

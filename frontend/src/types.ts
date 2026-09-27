@@ -20,6 +20,26 @@ export type ProductOption = {
   name: string
 }
 
+export type ProductAnalytics = {
+  id: number
+  name: string
+  booster_volume: number
+  opening_count: number
+  total_boosters: number
+  ex: number
+  ir: number
+  sir: number
+  fr: number
+  hr: number
+  cc: number
+  rarity_rates: Record<string, number>
+  total_hits: number
+  no_hit_boosters: number
+  hit_rate: number
+  no_hit_rate: number
+  one_in_x: number | null
+}
+
 export type Card = {
   id: number
   name: string

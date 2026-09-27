@@ -3,6 +3,7 @@ import { Alert, Snackbar } from "@mui/material";
 import {
   fetchEurToHufRate,
   fetchPlayers,
+  fetchProductAnalytics,
   fetchProducts,
   fetchRecords,
   fetchSets,
@@ -24,6 +25,7 @@ import type {
   PlayerOption,
   ProductOption,
   RecordRow,
+  ProductAnalytics,
   SetOption,
 } from "./types";
 import SummaryView from "./SummaryView";
@@ -54,6 +56,9 @@ function App() {
     () => readSelectedSet() ?? "",
   );
   const [records, setRecords] = useState<RecordRow[]>([]);
+  const [productAnalytics, setProductAnalytics] = useState<ProductAnalytics[]>([]);
+  const [productAnalyticsLoading, setProductAnalyticsLoading] = useState(false);
+  const [productAnalyticsError, setProductAnalyticsError] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeView, setActiveView] = useState<AppView>(() =>
@@ -164,6 +169,28 @@ function App() {
     void loadRecords();
   }, [selectedSetId]);
 
+  useEffect(() => {
+    if (!selectedSetId) {
+      setProductAnalytics([]);
+      return;
+    }
+    const setId = selectedSetId;
+
+    async function loadProductAnalytics() {
+      setProductAnalyticsLoading(true);
+      setProductAnalyticsError("");
+      try {
+        setProductAnalytics(await fetchProductAnalytics(setId));
+      } catch {
+        setProductAnalytics([]);
+        setProductAnalyticsError("Could not load product analytics.");
+      } finally {
+        setProductAnalyticsLoading(false);
+      }
+    }
+    void loadProductAnalytics();
+  }, [selectedSetId]);
+
   function handleSetChange(setId: number) {
     setSelectedSetId(setId);
     writeSelectedSet(setId);
@@ -229,6 +256,9 @@ function App() {
           selectedSet={selectedSet}
           records={records}
           loading={loading}
+          productAnalytics={productAnalytics}
+          productAnalyticsLoading={productAnalyticsLoading}
+          productAnalyticsError={productAnalyticsError}
         />
       )}
       {selectedSet && (
