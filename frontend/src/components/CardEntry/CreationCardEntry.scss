@@ -1,17 +1,17 @@
-.card-entry-fields {
+.creation-card-entry__fields {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(110px, 1fr);
   gap: 18px;
 }
 
-.card-entry-status {
+.creation-card-entry__status {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 @media (max-width: 640px) {
-  .card-entry-fields {
+  .creation-card-entry__fields {
     grid-template-columns: 1fr;
   }
 }

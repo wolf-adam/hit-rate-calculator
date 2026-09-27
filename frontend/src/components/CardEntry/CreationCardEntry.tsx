@@ -9,14 +9,13 @@ import {
 } from '@mui/material'
 import type { Card, CardDraft } from '../../types'
 import { getPkmnCardsSearchUrl } from '../../utils'
-import './CardEntry.scss'
+import './CreationCardEntry.scss'
 
-type CardEntryProps = {
+type CreationCardEntryProps = {
   value: CardDraft
   onChange: (value: CardDraft) => void
-  cards?: Card[]
-  cardsLoading?: boolean
-  lockMetadata?: boolean
+  cards: Card[]
+  cardsLoading: boolean
   disabled?: boolean
 }
 
@@ -24,21 +23,19 @@ function normalizeName(value: string) {
   return value.trim().toLocaleLowerCase()
 }
 
-function CardEntry({
+function CreationCardEntry({
   value,
   onChange,
-  cards = [],
-  cardsLoading = false,
-  lockMetadata = false,
+  cards,
+  cardsLoading,
   disabled = false,
-}: CardEntryProps) {
+}: CreationCardEntryProps) {
   const matchedCard = cards.find(
     (card) => normalizeName(card.name) === normalizeName(value.name),
   )
-  const metadataDisabled = disabled || cardsLoading
-    || (lockMetadata && Boolean(matchedCard))
+  const metadataDisabled = disabled || cardsLoading || Boolean(matchedCard)
 
-  const updateField = (field: keyof CardDraft, fieldValue: string) => {
+  function updateField(field: keyof CardDraft, fieldValue: string) {
     if (field === 'name') {
       const card = cards.find(
         (option) => normalizeName(option.name) === normalizeName(fieldValue),
@@ -65,7 +62,7 @@ function CardEntry({
   }
 
   return (
-    <Stack className="card-entry" spacing={1.5}>
+    <Stack className="creation-card-entry" spacing={1.5}>
       <Autocomplete
         freeSolo
         options={cards}
@@ -103,15 +100,11 @@ function CardEntry({
         }}
         noOptionsText="No matching cards"
         renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Card name"
-            required
-          />
+          <TextField {...params} label="Card name" required />
         )}
       />
       {cardsLoading && (
-        <div className="card-entry-status">
+        <div className="creation-card-entry__status">
           <CircularProgress size={18} />
           <Typography variant="body2" color="text.secondary">
             Loading saved cards...
@@ -123,7 +116,7 @@ function CardEntry({
           Card not found. Enter the link, image source, and price manually.
         </Alert>
       )}
-      <div className="card-entry-fields">
+      <div className="creation-card-entry__fields">
         <TextField
           label="Card link"
           required
@@ -163,4 +156,4 @@ function CardEntry({
   )
 }
 
-export default CardEntry
+export default CreationCardEntry

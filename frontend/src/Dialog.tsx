@@ -29,7 +29,7 @@ import type {
   SetOption,
 } from './types'
 import ProductSelect from './components/ProductSelect/ProductSelect'
-import CardEntry from './components/CardEntry/CardEntry'
+import CreationCardEntry from './components/CardEntry/CreationCardEntry'
 import './Dialog.scss'
 
 type DialogProps = {
@@ -281,9 +281,8 @@ function DialogComponent({
                     )}
                   />
                 ))}
-                <CardEntry
+                <CreationCardEntry
                   value={record.card}
-                  lockMetadata
                   cards={cards}
                   cardsLoading={cardsLoading}
                   disabled={modalLoading || cardsLoading || saving}

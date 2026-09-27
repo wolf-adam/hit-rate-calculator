@@ -20,14 +20,16 @@ import type {
   ProductOption,
   RecordItem,
   RecordUpdate,
+  SetOption,
 } from './types'
 import ProductSelect from './components/ProductSelect/ProductSelect'
-import CardEntry from './components/CardEntry/CardEntry'
+import EditCardEntry from './components/CardEntry/EditCardEntry'
 import { formatBiggestHitLink } from './utils'
 import './EditRecordDialog.scss'
 
 type EditRecordDialogProps = {
   record: RecordItem | null
+  selectedSet?: SetOption
   products: ProductOption[]
   onClose: () => void
   onSaved: () => Promise<void>
@@ -76,6 +78,7 @@ function toForm(record: RecordItem): RecordForm {
 
 function EditRecordDialog({
   record,
+  selectedSet,
   products,
   onClose,
   onSaved,
@@ -85,6 +88,9 @@ function EditRecordDialog({
   const [form, setForm] = useState<RecordForm | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const visibleRarityFields = rarityFields.filter(
+    (field) => (selectedSet?.[field.key] ?? 0) > 0,
+  )
 
   useEffect(() => {
     setForm(record ? toForm(record) : null)
@@ -165,7 +171,7 @@ function EditRecordDialog({
             fullWidth
           />
           <div className="record-form">
-            {rarityFields.map((field) => (
+            {visibleRarityFields.map((field) => (
               <TextField
                 key={field.key}
                 className={`record-field record-field--${field.key}`}
@@ -176,7 +182,7 @@ function EditRecordDialog({
                 onChange={(event) => updateField(field.key, event.target.value)}
               />
             ))}
-            <CardEntry
+            <EditCardEntry
               value={form?.card ?? {
                 name: '',
                 link: '',

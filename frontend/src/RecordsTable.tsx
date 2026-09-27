@@ -285,6 +285,7 @@ const RecordsTable = ({
       </Table>
       <EditRecordDialog
         record={editingRecord}
+        selectedSet={selectedSet}
         products={products}
         onClose={() => setEditingRecord(null)}
         onError={(message) => onNotify(message, 'error')}
