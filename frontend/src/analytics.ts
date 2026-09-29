@@ -8,6 +8,19 @@ type RarityDefinition = {
   color: string;
 };
 
+export const EXPECTED_RATE_SAMPLE_SIZE = 3000;
+
+const publishedExpectedRates: Record<string, Partial<Record<RarityKey, number>>> = {
+  "30C": {
+    ex: 21.02,
+    ir: 19.72,
+    cc: 10.15,
+    sir: 4.88,
+    fr: 0.83,
+    hr: 0,
+  },
+};
+
 const rarityDefinitions: RarityDefinition[] = [
   { key: "ex", label: "EX", color: "#5a9fc2" },
   { key: "ir", label: "IR", color: "#e2766f" },
@@ -23,7 +36,7 @@ export type AnalyticsRarity = {
   color: string;
   count: number;
   observedRate: number;
-  expectedRate: number | null;
+  expectedRate: number;
 };
 
 export type AnalyticsData = {
@@ -40,6 +53,15 @@ export type AnalyticsData = {
 const expectedRate = (value: number | undefined): number | null => {
   if (value === undefined || !Number.isFinite(value)) return null;
   return value <= 1 ? value * 100 : value;
+};
+
+const expectedRateForSet = (
+  selectedSet: SetOption | undefined,
+  key: RarityKey,
+): number | null => {
+  const publishedRate = publishedExpectedRates[selectedSet?.short_name ?? ""]?.[key];
+  if (publishedRate !== undefined) return publishedRate;
+  return expectedRate(selectedSet?.[key]);
 };
 
 export function buildAnalyticsData(
@@ -65,7 +87,7 @@ export function buildAnalyticsData(
   const premiumHits = counts.sir + counts.fr + counts.hr + counts.cc;
   const activeDefinitions = rarityDefinitions.filter(({ key }) => {
     if (!selectedSet) return true;
-    return (expectedRate(selectedSet[key]) ?? 0) > 0;
+    return (expectedRateForSet(selectedSet, key) ?? 0) > 0;
   });
   const rarities: AnalyticsRarity[] = activeDefinitions
     .map(({ key, label, color }) => ({
@@ -74,7 +96,7 @@ export function buildAnalyticsData(
       color,
       count: counts[key],
       observedRate: rate(counts[key]),
-      expectedRate: expectedRate(selectedSet?.[key]),
+      expectedRate: expectedRateForSet(selectedSet, key),
     }))
     .sort((left, right) => right.observedRate - left.observedRate);
 

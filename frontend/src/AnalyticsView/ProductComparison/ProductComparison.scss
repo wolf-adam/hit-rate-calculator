@@ -14,7 +14,7 @@
 
 .product-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 14px;
   margin-top: 18px;
 }
@@ -170,7 +170,7 @@
 
 .product-card__rarity strong {
   color: #4d4943;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
 }
 
 .product-card__rarity-track {

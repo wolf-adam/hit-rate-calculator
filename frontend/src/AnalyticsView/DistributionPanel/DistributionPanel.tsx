@@ -117,12 +117,13 @@ function NestedPieChart({
     <div className="analytics-donut-wrap">
       <PieChart
         className="analytics-donut"
-        height={340}
+        height={400}
+        margin={{ top: 5, right: 5, bottom: 5, left: 5 }}
         series={[
           {
             data: outcomeData,
-            innerRadius: 40,
-            outerRadius: 93,
+            innerRadius: 48,
+            outerRadius: 110,
             arcLabel: (item) => {
               const datum = outcomeData.find((entry) => entry.id === item.id);
               return `${item.label}\n(${datum?.percentage.toFixed(0) ?? 0}%)`;
@@ -135,13 +136,13 @@ function NestedPieChart({
           },
           {
             data: rarityData,
-            innerRadius: 94,
-            outerRadius: 118,
+            innerRadius: 112,
+            outerRadius: 142,
             arcLabel: (item) => {
               const datum = rarityData.find((entry) => entry.id === item.id);
               return `${item.label}\n(${datum?.percentage.toFixed(0) ?? 0}%)`;
             },
-            arcLabelRadius: 143,
+            arcLabelRadius: 170,
             valueFormatter: ({ value }) => `${value} hits`,
             highlightScope: { fade: "global", highlight: "item" },
             highlighted: { additionalRadius: 3 },
@@ -219,10 +220,12 @@ type DistributionPanelProps = {
 function DistributionPanel({ rarities, outcomes }: DistributionPanelProps) {
   return (
     <Paper className="analytics-panel content-panel" elevation={0}>
-      <Typography variant="h6">Hit and rarity distribution</Typography>
-      <Typography className="analytics-panel__subtitle">
-        Inner ring shows hit versus no-hit boosters; outer ring shows rarity.
-      </Typography>
+      <div>
+        <Typography variant="h6">Hit and rarity distribution</Typography>
+        <Typography className="analytics-panel__subtitle">
+            Inner ring shows hit versus no-hit boosters; outer ring shows rarity.
+        </Typography>
+      </div>
       <div className="analytics-chart-content analytics-chart-content--nested">
         <NestedPieChart rarities={rarities} outcomes={outcomes} />
         <NestedDistributionLegend outcomes={outcomes} rarities={rarities} />

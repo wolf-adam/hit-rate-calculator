@@ -8,6 +8,12 @@ function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
 }
 
+function formatBoosterCount(value: number) {
+  return `${value.toLocaleString()} booster${value > 1 ? "s" : ""}`;
+}
+
+type ProductRarityKey = "ex" | "ir" | "sir" | "fr" | "hr" | "cc";
+
 type ProductComparisonProps = {
   rarities: AnalyticsData["rarities"];
   products: ProductAnalytics[];
@@ -63,7 +69,7 @@ function ProductComparison({
               </div>
               <div className="product-card__stats">
                 <div>
-                  <span>Openings</span>
+                  <span>Opened</span>
                   <strong>{product.opening_count}</strong>
                 </div>
                 <div>
@@ -81,7 +87,7 @@ function ProductComparison({
               </div>
               <div className="product-card__rate">
                 <div>
-                  <span>Hit rate</span>
+                  <b>Hit rate</b>
                   <strong>{formatPercent(product.hit_rate)}</strong>
                 </div>
                 <div className="product-card__rate-track">
@@ -94,15 +100,19 @@ function ProductComparison({
               <div className="product-card__rarities">
                 {rarities
                   .filter((item) => item.key !== "noHit")
-                  .map((item) => (
-                    <div className="product-card__rarity" key={item.key}>
+                  .map((item) => {
+                    const rarityKey = item.key as ProductRarityKey;
+                    const rarityCount = product[rarityKey];
+
+                    return (
+                      <div className="product-card__rarity" key={item.key}>
                       <div>
                         <span>
                           <i style={{ backgroundColor: item.color }} />
                           {columns.find((column) => column.key === item.key)?.fullName ?? item.label}
                         </span>
                         <strong>
-                          {formatPercent(product.rarity_rates[item.key] ?? 0)}
+                          {`${formatPercent(product.rarity_rates[item.key] ?? 0)} (${formatBoosterCount(rarityCount)})`}
                         </strong>
                       </div>
                       <span className="product-card__rarity-track">
@@ -113,8 +123,9 @@ function ProductComparison({
                           }}
                         />
                       </span>
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
               </div>
             </article>
           ))}

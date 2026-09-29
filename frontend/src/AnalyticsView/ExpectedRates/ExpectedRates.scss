@@ -1,4 +1,6 @@
 .analytics-rates {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
@@ -27,8 +29,7 @@
   font-weight: 700;
 }
 
-.analytics-source-banner strong,
-.analytics-source-banner span:last-child {
+.analytics-source-banner strong {
   display: block;
 }
 
@@ -36,76 +37,108 @@
   font-size: 0.8rem;
 }
 
-.analytics-source-banner span:last-child {
-  margin-top: 2px;
+.analytics-source-banner > div {
   font-size: 0.75rem;
   line-height: 1.4;
 }
 
+.analytics-source-banner a {
+  display: inline;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
 .analytics-rates-list {
   display: grid;
-  grid-template-columns: repeat(var(--rate-columns), minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr));
   align-items: stretch;
-  gap: 6px;
-  margin-top: 14px;
+  flex: 1;
+  gap: 12px;
+  margin-top: 18px;
 }
 
 .analytics-rate-row {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 14px;
   min-width: 0;
-  height: 100%;
-  padding: 8px;
+  min-height: 250px;
+  height: auto;
+  overflow: hidden;
+  padding: 16px;
   border: 1px solid #ded8cc;
   border-top: 4px solid #8d8880;
-  border-radius: 10px;
-  background: rgba(255, 253, 248, 0.82);
-  box-shadow: 0 5px 12px rgba(48, 43, 35, 0.05);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fffdf8 0%, #f3f1e9 100%);
+  box-shadow: 0 8px 18px rgba(48, 43, 35, 0.08);
 }
 
-.analytics-rate-row__label {
+.analytics-rate-row__glow {
+  position: absolute;
+  z-index: -1;
+  top: -52px;
+  right: -42px;
+  width: 135px;
+  height: 135px;
+  border-radius: 50%;
+  filter: blur(5px);
+  opacity: 0.2;
+}
+
+.analytics-rate-row__header {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  flex: 1 0 auto;
-  gap: 4px;
-  min-height: 65px;
-  text-align: center;
+  gap: 12px;
+  min-height: 4rem;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(90, 84, 74, 0.16);
 }
 
 .analytics-rate-row__label-name {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  height: 3rem;
+  gap: 8px;
+  min-width: 0;
 }
 
-.analytics-rate-row__label i {
+.analytics-rate-row__label-name i {
   width: 13px;
   height: 13px;
   flex: 0 0 auto;
   border-radius: 50%;
 }
 
-.analytics-rate-row__label strong {
+.analytics-rate-row__label-name strong {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  min-width: 0;
   color: #25221f;
-  font-size: 0.72rem;
-  line-height: 1.25;
+  font-size: 0.82rem;
+  line-height: 1.2;
 }
 
-.analytics-rate-row__label strong span {
+.analytics-rate-row__label-name strong span {
   display: block;
 }
 
-.analytics-rate-row__label span {
-  color: #77736d;
-  font-size: 0.68rem;
+.analytics-rate-row__hits {
+  flex: 0 0 auto;
+  color: #4d4943;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.analytics-rate-row__measures {
+  display: grid;
+  gap: 12px;
+  margin-top: auto;
 }
 
 .analytics-rate-row__measure > div {
@@ -118,7 +151,25 @@
 
 .analytics-rate-row__measure b {
   color: #4d4943;
-  font-size: 0.68rem;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.82rem;
+}
+
+.analytics-rate-row__measure b small {
+  color: #8c8780;
+  font-family: inherit;
+  font-size: 0.58rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.analytics-rate-row__one-in {
+  display: block;
+  margin-top: 7px;
+  color: #a14f27;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
 }
 
 .analytics-rate-row__track {
@@ -141,14 +192,16 @@
 }
 
 .analytics-rate-row__difference {
-  font-size: 0.8rem;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.9rem;
 }
 
 .analytics-rate-row__difference-wrap {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 8px;
+  margin-top: 2px;
+  padding-top: 12px;
   border-top: 1px solid #e2ddd4;
 }
 
@@ -167,10 +220,17 @@
 
 @media (max-width: 640px) {
   .analytics-rates-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
   }
 
   .analytics-rate-row {
+    min-height: 230px;
     padding: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .analytics-rates-list {
+    grid-template-columns: 1fr;
   }
 }
