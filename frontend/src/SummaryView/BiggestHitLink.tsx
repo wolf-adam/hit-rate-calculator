@@ -3,7 +3,7 @@ import {
   Link,
   Tooltip,
 } from '@mui/material'
-import { formatBiggestHitLink } from './utils'
+import { formatBiggestHitLink } from '../utils/formatting'
 import './BiggestHitLink.scss'
 
 type BiggestHitLinkProps = {

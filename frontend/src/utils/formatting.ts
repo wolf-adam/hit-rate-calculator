@@ -1,4 +1,4 @@
-import { Currency } from "./storage"
+import { Currency } from "../data/storage"
 
 export const formatNumber = (value: number): string => {
   return value.toLocaleString(undefined, { maximumFractionDigits: 2 })

@@ -4,12 +4,12 @@ import {
   Typography,
 } from '@mui/material'
 import RecordsTable from './RecordsTable'
-import type { Currency } from './storage'
+import type { Currency } from '../data/storage'
 import type {
   ProductOption,
   RecordRow,
   SetOption,
-} from './types'
+} from '../types'
 
 type SummaryViewProps = {
   selectedSet: SetOption | undefined

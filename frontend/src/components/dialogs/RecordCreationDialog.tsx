@@ -19,7 +19,7 @@ import {
   createRecord,
   fetchRecordsForModal,
   getApiErrorMessage,
-} from './api'
+} from '../../data/api'
 import type {
   CardDraft,
   Card,
@@ -27,10 +27,10 @@ import type {
   ProductOption,
   RecordRow,
   SetOption,
-} from './types'
-import ProductSelect from './components/ProductSelect/ProductSelect'
-import CreationCardEntry from './components/CardEntry/CreationCardEntry'
-import './Dialog.scss'
+} from '../../types'
+import ProductSelect from '../ProductSelect/ProductSelect'
+import CreationCardEntry from '../CardEntry/CreationCardEntry'
+import './RecordCreationDialog.scss'
 
 type DialogProps = {
   open: boolean

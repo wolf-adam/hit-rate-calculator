@@ -1,4 +1,4 @@
-import type { RecordRow, SetOption } from "./types";
+import type { RecordRow, SetOption } from "../types";
 
 type RarityKey = "ex" | "ir" | "sir" | "fr" | "hr" | "cc";
 
@@ -36,7 +36,7 @@ export type AnalyticsRarity = {
   color: string;
   count: number;
   observedRate: number;
-  expectedRate: number;
+  expectedRate: number | null;
 };
 
 export type AnalyticsData = {

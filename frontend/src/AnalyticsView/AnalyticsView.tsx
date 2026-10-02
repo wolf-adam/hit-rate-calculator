@@ -3,13 +3,13 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import { buildAnalyticsData } from "./analytics";
-import type { ProductAnalytics, RecordRow, SetOption } from "./types";
+import { buildAnalyticsData } from "../domain/analytics";
+import type { ProductAnalytics, RecordRow, SetOption } from "../types";
 import "./AnalyticsView.scss";
-import AnalyticsKpis from "./AnalyticsView/AnalyticsKpis/AnalyticsKpis";
-import DistributionPanel from "./AnalyticsView/DistributionPanel/DistributionPanel";
-import ExpectedRates from "./AnalyticsView/ExpectedRates/ExpectedRates";
-import ProductComparison from "./AnalyticsView/ProductComparison/ProductComparison";
+import AnalyticsKpis from "./AnalyticsKpis/AnalyticsKpis";
+import DistributionPanel from "./DistributionPanel/DistributionPanel";
+import ExpectedRates from "./ExpectedRates/ExpectedRates";
+import ProductComparison from "./ProductComparison/ProductComparison";
 
 type AnalyticsViewProps = {
   selectedSet?: SetOption;

@@ -1,6 +1,6 @@
 import { Alert, CircularProgress, Paper, Typography } from "@mui/material";
-import { columns } from "../../constants";
-import type { AnalyticsData } from "../../analytics";
+import { columns } from "../../config/constants";
+import type { AnalyticsData } from "../../domain/analytics";
 import type { ProductAnalytics } from "../../types";
 import "./ProductComparison.scss";
 

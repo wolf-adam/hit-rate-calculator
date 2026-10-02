@@ -1,4 +1,4 @@
-import type { ProductOption, SetOption } from './types'
+import type { ProductOption, SetOption } from '../types'
 
 const SETS_KEY = 'hit-rate-calculator.sets'
 const PRODUCTS_KEY = 'hit-rate-calculator.products'

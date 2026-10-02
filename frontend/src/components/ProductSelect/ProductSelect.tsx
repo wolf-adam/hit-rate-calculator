@@ -3,7 +3,7 @@ import {
   Chip,
   TextField,
 } from '@mui/material'
-import { productColors } from '../../constants'
+import { productColors } from '../../config/constants'
 import type { ProductOption } from '../../types'
 import './ProductSelect.scss'
 

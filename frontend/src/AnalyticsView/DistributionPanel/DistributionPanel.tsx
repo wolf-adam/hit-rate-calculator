@@ -9,8 +9,8 @@ import { styled } from "@mui/material/styles";
 import type { Theme } from "@mui/material/styles";
 import { animated, to } from "@react-spring/web";
 import { arc as d3Arc } from "@mui/x-charts-vendor/d3-shape";
-import { columns } from "../../constants";
-import type { AnalyticsData } from "../../analytics";
+import { columns } from "../../config/constants";
+import type { AnalyticsData } from "../../domain/analytics";
 import "./DistributionPanel.scss";
 
 type ChartDatum = {

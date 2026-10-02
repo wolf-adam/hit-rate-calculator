@@ -1,5 +1,5 @@
 import type { ChipProps } from "@mui/material/Chip";
-import { RecordRow } from "./types";
+import { RecordRow } from "../types";
 
 export const productColors: ChipProps["color"][] = [
   "primary",

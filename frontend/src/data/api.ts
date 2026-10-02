@@ -10,7 +10,7 @@ import type {
   RecordRow,
   RecordUpdate,
   SetOption,
-} from './types'
+} from '../types'
 
 const client = axios.create({ baseURL: '/api' })
 const exchangeClient = axios.create({ baseURL: 'https://api.frankfurter.dev/v1' })

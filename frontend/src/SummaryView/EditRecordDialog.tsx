@@ -14,17 +14,17 @@ import {
   getApiErrorMessage,
   updateCard,
   updateRecord,
-} from './api'
+} from '../data/api'
 import type {
   CardDraft,
   ProductOption,
   RecordItem,
   RecordUpdate,
   SetOption,
-} from './types'
-import ProductSelect from './components/ProductSelect/ProductSelect'
-import EditCardEntry from './components/CardEntry/EditCardEntry'
-import { formatBiggestHitLink } from './utils'
+} from '../types'
+import ProductSelect from '../components/ProductSelect/ProductSelect'
+import EditCardEntry from '../components/CardEntry/EditCardEntry'
+import { formatBiggestHitLink } from '../utils/formatting'
 import './EditRecordDialog.scss'
 
 type EditRecordDialogProps = {

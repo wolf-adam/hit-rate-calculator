@@ -8,7 +8,7 @@ import {
   Typography,
 } from '@mui/material'
 import type { Card, CardDraft } from '../../types'
-import { getPkmnCardsSearchUrl } from '../../utils'
+import { getPkmnCardsSearchUrl } from '../../utils/formatting'
 import './CreationCardEntry.scss'
 
 type CreationCardEntryProps = {

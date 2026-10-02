@@ -1,9 +1,9 @@
 import { Paper, Typography } from "@mui/material";
-import { columns } from "../../constants";
+import { columns } from "../../config/constants";
 import {
   EXPECTED_RATE_SAMPLE_SIZE,
   type AnalyticsData,
-} from "../../analytics";
+} from "../../domain/analytics";
 import "./ExpectedRates.scss";
 
 function formatPercent(value: number) {
@@ -29,8 +29,8 @@ function formatConfidenceMargin(rate: number, sampleSize: number) {
   return `±${formatPercent(margin * 100)}`;
 }
 
-function formatOneIn(rate: number) {
-  if (rate <= 0) return "1 in -- boosters";
+function formatOneIn(rate: number | null) {
+  if (rate === null || rate <= 0) return "1 in -- boosters";
   return `1 in ${Math.max(1, Math.round(100 / rate)).toLocaleString()} boosters`;
 }
 

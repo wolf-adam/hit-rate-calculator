@@ -8,7 +8,7 @@ import {
   fetchProducts,
   fetchRecords,
   fetchSets,
-} from "./api";
+} from "../data/api";
 import {
   readCachedExchangeRate,
   readCachedProducts,
@@ -20,8 +20,8 @@ import {
   writeCachedSets,
   writeCurrency,
   writeSelectedSet,
-} from "./storage";
-import type { Currency } from "./storage";
+} from "../data/storage";
+import type { Currency } from "../data/storage";
 import type {
   PlayerOption,
   ProductOption,
@@ -29,11 +29,11 @@ import type {
   ProductAnalytics,
   Card,
   SetOption,
-} from "./types";
-import SummaryView from "./SummaryView";
-import AnalyticsView from "./AnalyticsView";
-import Dialog from "./Dialog";
-import Header from "./Header";
+} from "../types";
+import SummaryView from "../SummaryView/SummaryView";
+import AnalyticsView from "../AnalyticsView/AnalyticsView";
+import RecordCreationDialog from "../components/dialogs/RecordCreationDialog";
+import Header from "../layouts/Header";
 import "./App.scss";
 
 type AppView = "summary" | "analytics";
@@ -279,7 +279,7 @@ function App() {
         />
       )}
       {selectedSet && (
-        <Dialog
+        <RecordCreationDialog
           open={dialogOpen}
           set={selectedSet}
           players={players}

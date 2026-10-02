@@ -12,8 +12,8 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import QueryStatsOutlinedIcon from "@mui/icons-material/QueryStatsOutlined";
-import type { Currency } from "./storage";
-import type { SetOption } from "./types";
+import type { Currency } from "../data/storage";
+import type { SetOption } from "../types";
 import "./Header.scss";
 
 type HeaderProps = {
