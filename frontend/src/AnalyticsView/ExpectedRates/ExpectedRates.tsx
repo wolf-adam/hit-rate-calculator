@@ -74,6 +74,8 @@ function ExpectedRates({ rarities, totalBoosters }: ExpectedRatesProps) {
           const label =
             columns.find((column) => column.key === item.key)?.fullName ??
             item.label;
+          const labelWords = label.trim().split(/\s+/);
+          const emphasizeInitials = labelWords.length > 1 || label === "EX";
 
           return (
             <article
@@ -88,9 +90,25 @@ function ExpectedRates({ rarities, totalBoosters }: ExpectedRatesProps) {
               <div className="analytics-rate-row__header">
                 <div className="analytics-rate-row__label-name">
                   <i style={{ backgroundColor: item.color }} />
-                  <strong>
-                    {label.split(" ").map((word) => (
-                      <span key={word}>{word}</span>
+                  <strong aria-label={label}>
+                    {labelWords.map((word, index) => (
+                      <span key={`${index}-${word}`}>
+                        {emphasizeInitials ? (
+                          <>
+                            <span className="analytics-rate-row__label-initial">
+                              {word.charAt(0)}
+                            </span>
+                            <span className={label === "EX"
+                              ? "analytics-rate-row__label-initial"
+                              : "analytics-rate-row__label-rest"}
+                            >
+                              {word.slice(1)}
+                            </span>
+                          </>
+                        ) : (
+                          word
+                        )}
+                      </span>
                     ))}
                   </strong>
                 </div>

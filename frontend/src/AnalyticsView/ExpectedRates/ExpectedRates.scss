@@ -31,9 +31,6 @@
 
 .analytics-source-banner strong {
   display: block;
-}
-
-.analytics-source-banner strong {
   font-size: 0.8rem;
 }
 
@@ -122,8 +119,23 @@
   line-height: 1.2;
 }
 
-.analytics-rate-row__label-name strong span {
+.analytics-rate-row__label-name strong > span {
   display: block;
+}
+
+.analytics-rate-row__label-initial,
+.analytics-rate-row__label-rest {
+  display: inline;
+}
+
+.analytics-rate-row__label-initial {
+  color: #a14f27;
+  font-weight: 800;
+}
+
+.analytics-rate-row__label-rest {
+  color: #77736d;
+  font-weight: 500;
 }
 
 .analytics-rate-row__hits {

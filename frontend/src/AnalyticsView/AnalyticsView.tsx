@@ -94,7 +94,13 @@ function AnalyticsView({
       />
 
       <div className="analytics-feature-grid">
-        <DistributionPanel rarities={data.rarities} outcomes={hitVsNoHit} />
+        <DistributionPanel
+          rarities={data.rarities}
+          outcomes={hitVsNoHit}
+          products={productAnalytics}
+          productsLoading={productAnalyticsLoading}
+          productsError={productAnalyticsError}
+        />
         <ExpectedRates
           rarities={data.rarities}
           totalBoosters={data.totalBoosters}
