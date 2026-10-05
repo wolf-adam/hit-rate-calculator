@@ -158,7 +158,7 @@ function DialogComponent({
     )) return
     setSaving(true)
     try {
-      await Promise.all(records.map(async (record) => {
+      const outcomes = await Promise.allSettled(records.map(async (record) => {
         const hasManualCard = Boolean(
           record.card.name
           && record.card.link
@@ -190,10 +190,34 @@ function DialogComponent({
           in_product_id: record.in_product_id,
         })
       }))
-      onRecordsUpdated(await fetchRecordsForModal(set.id))
-      onSuccess('Records created successfully.')
+
+      const failedRecords = records.filter((_, index) => (
+        outcomes[index].status === 'rejected'
+      ))
+      if (failedRecords.length > 0) {
+        const savedCount = records.length - failedRecords.length
+        setRecords(failedRecords)
+        const firstFailure = outcomes.find(
+          (outcome) => outcome.status === 'rejected',
+        )
+        const detail = firstFailure?.status === 'rejected'
+          ? getApiErrorMessage(firstFailure.reason, 'Please retry the failed rows.')
+          : 'Please retry the failed rows.'
+        onError(
+          `${savedCount} of ${records.length} records saved; `
+          + `${failedRecords.length} failed. ${detail}`,
+        )
+        return
+      }
+
       resetForm()
       onClose()
+      try {
+        onRecordsUpdated(await fetchRecordsForModal(set.id))
+        onSuccess('Records created successfully.')
+      } catch {
+        onError('Records were saved, but the list could not be refreshed.')
+      }
     } catch (error) {
       onError(getApiErrorMessage(error, 'Could not save all records.'))
     } finally {
