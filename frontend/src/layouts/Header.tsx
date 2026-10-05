@@ -22,6 +22,7 @@ type HeaderProps = {
   currency: Currency;
   players: { id: number; name: string }[];
   products: { id: number; name: string }[];
+  onAddUser: () => void;
   setDialogOpen: (open: boolean) => void;
   onSetChange: (setId: number) => void;
   onCurrencyChange: (currency: Currency) => void;
@@ -35,6 +36,7 @@ function Header({
   currency,
   players,
   products,
+  onAddUser,
   setDialogOpen,
   onSetChange,
   onCurrencyChange,
@@ -84,6 +86,12 @@ function Header({
         </div>
         {activeView === "summary" && (
           <div className="header-actions">
+            <Button
+              variant="contained"
+              onClick={onAddUser}
+            >
+              + Add new user
+            </Button>
             <Button
               variant="contained"
               onClick={() => setDialogOpen(true)}

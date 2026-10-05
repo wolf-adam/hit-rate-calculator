@@ -33,6 +33,14 @@ export async function fetchPlayers(): Promise<PlayerOption[]> {
   return data
 }
 
+export async function createPlayer(player: {
+  first_name: string
+  last_name: string
+}): Promise<PlayerOption> {
+  const { data } = await client.post<PlayerOption>('/players', player)
+  return data
+}
+
 export async function fetchProducts(): Promise<ProductOption[]> {
   const { data } = await client.get<ProductOption[]>('/products')
   return data

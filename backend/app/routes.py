@@ -12,6 +12,7 @@ from .schemas import (
     CardCreate,
     CardResponse,
     CardUpdate,
+    PlayerCreate,
     PlayerResponse,
     ProductAnalyticsResponse,
     ProductResponse,
@@ -139,6 +140,37 @@ def get_players(db: Session = Depends(get_db)) -> list[PlayerResponse]:
         PlayerResponse(id=player.id, name=f"{player.first_name} {player.last_name}")
         for player in players
     ]
+
+
+@router.post(
+    "/players",
+    response_model=PlayerResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Catalog"],
+)
+def create_player(
+    payload: PlayerCreate,
+    db: Session = Depends(get_db),
+) -> PlayerResponse:
+    existing = db.scalar(
+        select(Player).where(
+            func.lower(Player.first_name) == payload.first_name.lower()
+        )
+    )
+    if existing is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A player with this first name already exists.",
+        )
+
+    player = Player(first_name=payload.first_name, last_name=payload.last_name)
+    db.add(player)
+    db.commit()
+    db.refresh(player)
+    return PlayerResponse(
+        id=player.id,
+        name=f"{player.first_name} {player.last_name}",
+    )
 
 
 @router.get("/products", response_model=list[ProductResponse], tags=["Catalog"])

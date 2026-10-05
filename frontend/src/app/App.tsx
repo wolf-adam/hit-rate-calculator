@@ -33,6 +33,7 @@ import type {
 import SummaryView from "../SummaryView/SummaryView";
 import AnalyticsView from "../AnalyticsView/AnalyticsView";
 import RecordCreationDialog from "../components/dialogs/RecordCreationDialog";
+import UserCreationDialog from "../components/dialogs/UserCreationDialog";
 import Header from "../layouts/Header";
 import "./App.scss";
 
@@ -69,6 +70,7 @@ function App() {
     getViewFromPath(window.location.pathname),
   );
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
 
   useEffect(() => {
     async function loadCards() {
@@ -241,6 +243,7 @@ function App() {
         currency={currency}
         players={players}
         products={products}
+        onAddUser={() => setUserDialogOpen(true)}
         setDialogOpen={setDialogOpen}
         onSetChange={handleSetChange}
         onCurrencyChange={(nextCurrency) => {
@@ -292,6 +295,18 @@ function App() {
           onSuccess={(message) => notify(message, "success")}
         />
       )}
+      <UserCreationDialog
+        open={userDialogOpen}
+        onClose={() => setUserDialogOpen(false)}
+        onCreated={(player) => {
+          setPlayers((current) => [...current, player].sort((a, b) =>
+            a.name.localeCompare(b.name),
+          ));
+          setUserDialogOpen(false);
+          notify(`${player.name} added successfully.`, "success");
+        }}
+        onError={(message) => notify(message, "error")}
+      />
       <Snackbar
         open={Boolean(toast)}
         autoHideDuration={4000}

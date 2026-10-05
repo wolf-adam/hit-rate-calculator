@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class SetResponse(BaseModel):
@@ -21,6 +21,16 @@ class SetResponse(BaseModel):
 class PlayerResponse(BaseModel):
     id: int
     name: str
+
+
+class PlayerCreate(BaseModel):
+    first_name: str = Field(min_length=1, max_length=120)
+    last_name: str = Field(min_length=1, max_length=240)
+
+    @field_validator("first_name", "last_name", mode="before")
+    @classmethod
+    def strip_name(cls, value: str) -> str:
+        return value.strip() if isinstance(value, str) else value
 
 
 class ProductResponse(BaseModel):
