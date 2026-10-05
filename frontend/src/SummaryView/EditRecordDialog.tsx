@@ -10,10 +10,8 @@ import {
   TextField,
 } from '@mui/material'
 import {
-  createCard,
   getApiErrorMessage,
-  updateCard,
-  updateRecord,
+  updateRecordWithCard,
 } from '../data/api'
 import type {
   CardDraft,
@@ -112,21 +110,8 @@ function EditRecordDialog({
     setError('')
 
     try {
-      const card = form.card.card_id
-        ? await updateCard(form.card.card_id, {
-          name: form.card.name,
-          link: form.card.link,
-          image_src: form.card.image_src,
-          price: Number(form.card.price),
-        })
-        : await createCard({
-          name: form.card.name,
-          link: form.card.link,
-          image_src: form.card.image_src,
-          price: Number(form.card.price),
-        })
       const payload: RecordUpdate = {
-        card_id: card.id,
+        card_id: form.card.card_id,
         in_product_id: Number(form.in_product_id),
         ex: Number(form.ex),
         ir: Number(form.ir),
@@ -134,11 +119,16 @@ function EditRecordDialog({
         cc: Number(form.cc),
         fr: Number(form.fr),
         hr: Number(form.hr),
-        biggest_hit_link: card.link,
-        biggest_hit_src: card.image_src,
-        price: card.price,
+        biggest_hit_link: form.card.link,
+        biggest_hit_src: form.card.image_src,
+        price: Number(form.card.price),
       }
-      await updateRecord(record.id, payload)
+      await updateRecordWithCard(record.id, {
+        name: form.card.name,
+        link: form.card.link,
+        image_src: form.card.image_src,
+        price: Number(form.card.price),
+      }, payload)
       await onSaved()
       onSuccess('Record updated successfully.')
       onClose()

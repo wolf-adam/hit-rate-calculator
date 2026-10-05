@@ -20,6 +20,7 @@ from .schemas import (
     RecordItemResponse,
     RecordResponse,
     RecordUpdate,
+    RecordWithCardUpdate,
     SetResponse,
 )
 
@@ -426,6 +427,82 @@ def update_record(
     db.commit()
     db.refresh(record)
     return record
+
+
+@router.put(
+    "/records/{record_id}/edit",
+    response_model=RecordItemResponse,
+    tags=["Records"],
+)
+def update_record_with_card(
+    record_id: int,
+    payload: RecordWithCardUpdate,
+    db: Session = Depends(get_db),
+) -> Record:
+    record = db.get(Record, record_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Record not found"
+        )
+    if db.get(Product, payload.record.in_product_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
+        )
+
+    card = record.card
+    normalized_link = normalize_card_link(payload.card.link)
+    duplicate_name = db.scalar(
+        select(Card.id).where(
+            func.lower(Card.name) == payload.card.name.strip().lower(),
+            Card.id != card.id if card is not None else True,
+        )
+    )
+    if duplicate_name is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A card with this name already exists.",
+        )
+    duplicate_link = db.scalar(
+        select(Card.id).where(
+            Card.link == normalized_link,
+            Card.id != card.id if card is not None else True,
+        )
+    )
+    if duplicate_link is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A card with this link already exists.",
+        )
+
+    if card is None:
+        card = Card(
+            name=payload.card.name,
+            link=normalized_link,
+            image_src=payload.card.image_src,
+            price=payload.card.price,
+        )
+        db.add(card)
+    else:
+        card.name = payload.card.name
+        card.link = normalized_link
+        card.image_src = payload.card.image_src
+        card.price = payload.card.price
+
+    record_update_values = payload.record.model_dump(
+        exclude={"card_id", "biggest_hit_link", "biggest_hit_src", "price"}
+    )
+    for field, value in record_update_values.items():
+        setattr(record, field, value)
+    record.card = card
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    db.refresh(record)
+    return record
+
 
 @router.post(
     "/records",

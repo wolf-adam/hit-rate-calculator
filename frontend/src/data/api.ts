@@ -108,6 +108,18 @@ export async function updateRecord(
   return data
 }
 
+export async function updateRecordWithCard(
+  recordId: number,
+  card: Omit<CardDraft, 'card_id' | 'price'> & { price: number },
+  record: RecordUpdate,
+): Promise<RecordItem> {
+  const { data } = await client.put<RecordItem>(`/records/${recordId}/edit`, {
+    card,
+    record,
+  })
+  return data
+}
+
 export async function fetchEurToHufRate(): Promise<number> {
   const { data } = await exchangeClient.get<{ rates: { HUF: number } }>('/latest', {
     params: { base: 'EUR', symbols: 'HUF' },

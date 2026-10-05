@@ -110,6 +110,11 @@ class RecordUpdate(BaseModel):
     price: Decimal = Field(ge=0)
 
 
+class RecordWithCardUpdate(BaseModel):
+    card: CardUpdate
+    record: RecordUpdate
+
+
 class RecordItemResponse(BaseModel):
     id: int
     card_id: int | None = None
