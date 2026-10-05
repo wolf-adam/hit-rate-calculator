@@ -126,11 +126,11 @@ function CreationCardEntry({
           helperText={value.name ? (
             <span>Find card image on
               <Link
-                href={getPkmnCardsSearchUrl(firstName)}
+                href={`https://www.cardmarket.com/en/Pokemon/Products/Search?category=-1&searchString=${encodeURIComponent(value.name)}&searchMode=v2`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {' pkmncards.com'}
+                {' cardmarket.com'}
               </Link>
             </span>
           ) : undefined}
@@ -140,6 +140,17 @@ function CreationCardEntry({
           value={value.image_src}
           disabled={metadataDisabled}
           onChange={(event) => updateField('image_src', event.target.value)}
+          helperText={value.name ? (
+            <span>Find card image on
+              <Link
+                href={getPkmnCardsSearchUrl(value.name)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {' pkmncards.com'}
+              </Link>
+            </span>
+          ) : undefined}
         />
         <TextField
           label="Price (€)"
