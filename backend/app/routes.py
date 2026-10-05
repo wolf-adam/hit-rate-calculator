@@ -31,7 +31,6 @@ def resolve_card(
     link: str,
     image_src: str | None,
     price: Decimal,
-    name: str | None = None,
 ) -> Card:
     normalized_link = normalize_card_link(link)
     card = db.scalar(select(Card).where(Card.link == normalized_link))
@@ -41,8 +40,13 @@ def resolve_card(
             card.name = canonical_name
         return card
 
+    canonical_name = card_name_from_link(normalized_link)
+    card = db.scalar(select(Card).where(Card.name == canonical_name))
+    if card is not None:
+        return card
+
     card = Card(
-        name=name or card_name_from_link(normalized_link),
+        name=canonical_name,
         link=normalized_link,
         image_src=image_src or normalized_link,
         price=price,
@@ -56,14 +60,24 @@ def resolve_card(
 def lookup_card(
     name: str = Query(..., min_length=1), db: Session = Depends(get_db)
 ) -> Card:
-    card = db.scalar(
-        select(Card).where(func.lower(Card.name) == name.strip().lower())
+    cards = list(
+        db.scalars(
+            select(Card)
+            .where(func.lower(Card.name) == name.strip().lower())
+            .order_by(Card.id)
+            .limit(2)
+        )
     )
-    if card is None:
+    if not cards:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
         )
-    return card
+    if len(cards) > 1:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Multiple cards share this name; select a specific card.",
+        )
+    return cards[0]
 
 
 @router.get("/cards", response_model=list[CardResponse], tags=["Cards"])
@@ -82,14 +96,12 @@ def create_card(
     db: Session = Depends(get_db),
 ) -> Card:
     normalized_link = normalize_card_link(payload.link)
+    canonical_name = card_name_from_link(normalized_link)
     existing = db.scalar(
-        select(Card).where(
-            (Card.link == normalized_link)
-            | (func.lower(Card.name) == payload.name.strip().lower())
-        )
+        select(Card).where(Card.link == normalized_link)
     )
     if existing is not None:
-        existing.name = payload.name.strip()
+        existing.name = canonical_name
         existing.link = normalized_link
         existing.image_src = payload.image_src
         existing.price = payload.price
@@ -97,8 +109,12 @@ def create_card(
         db.refresh(existing)
         return existing
 
+    existing = db.scalar(select(Card).where(Card.name == canonical_name))
+    if existing is not None:
+        return existing
+
     card = Card(
-        name=card_name_from_link(normalized_link),
+        name=canonical_name,
         link=normalized_link,
         image_src=payload.image_src,
         price=payload.price,
@@ -119,6 +135,17 @@ def update_card(
     if card is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
+        )
+    duplicate_name = db.scalar(
+        select(Card.id).where(
+            func.lower(Card.name) == payload.name.strip().lower(),
+            Card.id != card_id,
+        )
+    )
+    if duplicate_name is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A card with this name already exists.",
         )
     card.name = payload.name
     card.link = normalize_card_link(payload.link)

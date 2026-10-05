@@ -26,7 +26,7 @@ def get_db() -> Generator[Session, None, None]:
 def initialize_database() -> None:
     """Create missing tables, including the current records table."""
     Base.metadata.create_all(bind=engine)
-    normalize_card_names()
+    migrate_card_name_identity()
     migrate_v1_records_to_v2()
     remove_record_card_metadata_columns()
 
@@ -82,9 +82,12 @@ def migrate_v1_records_to_v2() -> None:
             normalized_link = normalize_card_link(legacy["biggest_hit_link"])
             if card is None:
                 card = session.scalar(
+                    select(Card).where(Card.link == normalized_link)
+                )
+            if card is None:
+                card = session.scalar(
                     select(Card).where(
-                        (Card.link == normalized_link)
-                        | (Card.name == card_name_from_link(normalized_link))
+                        Card.name == card_name_from_link(normalized_link)
                     )
                 )
             if card is None:
@@ -158,14 +161,134 @@ def remove_record_card_metadata_columns() -> None:
 
 
 def normalize_card_names() -> None:
-    """Bring stored card names in line with the canonical link formatter."""
+    """Canonicalize names and merge variants that resolve to one card name."""
     with SessionLocal() as session:
-        cards = session.scalars(select(Card)).all()
-        changed = False
+        cards = session.scalars(select(Card).order_by(Card.id)).all()
+        canonical_cards: dict[str, Card] = {}
         for card in cards:
             canonical_name = card_name_from_link(card.link)
-            if card.name != canonical_name:
+            survivor = canonical_cards.get(canonical_name)
+            if survivor is None:
+                canonical_cards[canonical_name] = card
                 card.name = canonical_name
-                changed = True
-        if changed:
-            session.commit()
+                continue
+
+            session.query(Record).filter(Record.card_id == card.id).update(
+                {Record.card_id: survivor.id}, synchronize_session=False
+            )
+            session.delete(card)
+        session.commit()
+
+
+def migrate_card_name_identity() -> None:
+    """Restore unique canonical names after merging duplicate card variants."""
+    if engine.dialect.name == "sqlite":
+        has_name_uniqueness = _sqlite_cards_have_unique_name()
+        with SessionLocal() as session:
+            cards = session.scalars(select(Card).order_by(Card.id)).all()
+            canonical_names = [card_name_from_link(card.link) for card in cards]
+            already_migrated = (
+                has_name_uniqueness
+                and all(card.name == name for card, name in zip(cards, canonical_names))
+                and len(set(canonical_names)) == len(canonical_names)
+            )
+        if already_migrated:
+            return
+        if has_name_uniqueness:
+            _rebuild_sqlite_cards_table(unique_name=False)
+        normalize_card_names()
+        _rebuild_sqlite_cards_table(unique_name=True)
+        return
+
+    if engine.dialect.name == "postgresql":
+        unique_constraints = inspect(engine).get_unique_constraints(
+            "hit_rate_cards"
+        )
+        name_constraint = next(
+            (
+                constraint
+                for constraint in unique_constraints
+                if constraint.get("column_names") == ["name"]
+            ),
+            None,
+        )
+        if name_constraint is not None:
+            constraint_name = name_constraint.get("name")
+            if not constraint_name:
+                raise RuntimeError(
+                    "Card name uniqueness constraint has no database name."
+                )
+            quote = engine.dialect.identifier_preparer.quote
+            with engine.begin() as connection:
+                connection.execute(
+                    text(
+                        "ALTER TABLE hit_rate_cards DROP CONSTRAINT "
+                        f"{quote(constraint_name)}"
+                    )
+                )
+        normalize_card_names()
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "ALTER TABLE hit_rate_cards "
+                    "ADD CONSTRAINT uq_hit_rate_cards_name UNIQUE (name)"
+                )
+            )
+        return
+
+    raise RuntimeError(
+        "Cannot migrate card name uniqueness for database "
+        f"dialect {engine.dialect.name!r}."
+    )
+
+
+def _sqlite_cards_have_unique_name() -> bool:
+    with engine.connect() as connection:
+        quote = engine.dialect.identifier_preparer.quote
+        indexes = connection.exec_driver_sql(
+            "PRAGMA index_list('hit_rate_cards')"
+        ).mappings()
+        return any(
+            index["unique"]
+            and [
+                column["name"]
+                for column in connection.exec_driver_sql(
+                    f"PRAGMA index_info({quote(index['name'])})"
+                ).mappings()
+            ]
+            == ["name"]
+            for index in indexes
+        )
+
+
+def _rebuild_sqlite_cards_table(unique_name: bool) -> None:
+    name_constraint = "UNIQUE" if unique_name else ""
+    with engine.connect() as connection:
+        connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
+        connection.commit()
+        try:
+            with connection.begin():
+                connection.exec_driver_sql(
+                    "DROP TABLE IF EXISTS hit_rate_cards_migration"
+                )
+                connection.exec_driver_sql(
+                    "CREATE TABLE hit_rate_cards_migration ("
+                    "id INTEGER NOT NULL PRIMARY KEY, "
+                    f"name VARCHAR(240) NOT NULL {name_constraint}, "
+                    "link VARCHAR(500) NOT NULL UNIQUE, "
+                    "image_src VARCHAR(500) NOT NULL, "
+                    "price NUMERIC(10, 2) DEFAULT 0.0 NOT NULL)"
+                )
+                connection.exec_driver_sql(
+                    "INSERT INTO hit_rate_cards_migration "
+                    "(id, name, link, image_src, price) "
+                    "SELECT id, name, link, image_src, price "
+                    "FROM hit_rate_cards"
+                )
+                connection.exec_driver_sql("DROP TABLE hit_rate_cards")
+                connection.exec_driver_sql(
+                    "ALTER TABLE hit_rate_cards_migration RENAME TO hit_rate_cards"
+                )
+        finally:
+            connection.exec_driver_sql("PRAGMA foreign_keys=ON")
+            connection.commit()
