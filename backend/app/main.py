@@ -13,7 +13,20 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="Hit Rate Calculator API", lifespan=lifespan)
+app = FastAPI(
+    title="Hit Rate Calculator API",
+    lifespan=lifespan,
+    openapi_tags=[
+        {"name": "Cards", "description": "Card lookup and card details."},
+        {"name": "Catalog", "description": "Available sets, players, and products."},
+        {
+            "name": "Records",
+            "description": "Create, retrieve, and update opening records.",
+        },
+        {"name": "Analytics", "description": "Aggregated product opening statistics."},
+        {"name": "Health", "description": "Service health checks."},
+    ],
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -24,6 +37,6 @@ app.add_middleware(
 app.include_router(router, prefix="/api")
 
 
-@app.get("/health")
+@app.get("/health", tags=["Health"])
 def health() -> dict[str, str]:
     return {"status": "ok"}

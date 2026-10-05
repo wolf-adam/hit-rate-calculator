@@ -51,7 +51,7 @@ def resolve_card(
     return card
 
 
-@router.get("/cards/lookup", response_model=CardResponse)
+@router.get("/cards/lookup", response_model=CardResponse, tags=["Cards"])
 def lookup_card(
     name: str = Query(..., min_length=1), db: Session = Depends(get_db)
 ) -> Card:
@@ -65,12 +65,17 @@ def lookup_card(
     return card
 
 
-@router.get("/cards", response_model=list[CardResponse])
+@router.get("/cards", response_model=list[CardResponse], tags=["Cards"])
 def get_cards(db: Session = Depends(get_db)) -> list[Card]:
     return list(db.scalars(select(Card).order_by(Card.name.asc())))
 
 
-@router.post("/cards", response_model=CardResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/cards",
+    response_model=CardResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Cards"],
+)
 def create_card(
     payload: CardCreate,
     db: Session = Depends(get_db),
@@ -103,7 +108,7 @@ def create_card(
     return card
 
 
-@router.put("/cards/{card_id}", response_model=CardResponse)
+@router.put("/cards/{card_id}", response_model=CardResponse, tags=["Cards"])
 def update_card(
     card_id: int,
     payload: CardUpdate,
@@ -122,12 +127,12 @@ def update_card(
     db.refresh(card)
     return card
 
-@router.get("/sets", response_model=list[SetResponse])
+@router.get("/sets", response_model=list[SetResponse], tags=["Catalog"])
 def get_sets(db: Session = Depends(get_db)) -> list[CardSet]:
     return list(db.scalars(select(CardSet).order_by(CardSet.id.asc())))
 
 
-@router.get("/players", response_model=list[PlayerResponse])
+@router.get("/players", response_model=list[PlayerResponse], tags=["Catalog"])
 def get_players(db: Session = Depends(get_db)) -> list[PlayerResponse]:
     players = db.scalars(select(Player).order_by(Player.first_name, Player.last_name))
     return [
@@ -136,7 +141,7 @@ def get_players(db: Session = Depends(get_db)) -> list[PlayerResponse]:
     ]
 
 
-@router.get("/products", response_model=list[ProductResponse])
+@router.get("/products", response_model=list[ProductResponse], tags=["Catalog"])
 def get_products(db: Session = Depends(get_db)) -> list[ProductResponse]:
     products = db.scalars(
         select(Product).order_by(Product.booster_volume.asc(), Product.name.asc())
@@ -225,7 +230,7 @@ def aggregate_records(
         )
     return responses
 
-@router.get("/records", response_model=list[RecordResponse])
+@router.get("/records", response_model=list[RecordResponse], tags=["Records"])
 def get_records(
     set_id: int = Query(..., gt=0), db: Session = Depends(get_db)
 ) -> list[RecordResponse]:
@@ -255,7 +260,7 @@ def get_records(
     return aggregate_records(records, card_set, product_set)
 
 
-@router.get("/records/modal", response_model=list[RecordResponse])
+@router.get("/records/modal", response_model=list[RecordResponse], tags=["Records"])
 def get_records_for_modal(
     set_id: int = Query(..., gt=0), db: Session = Depends(get_db)
 ) -> list[RecordResponse]:
@@ -263,7 +268,9 @@ def get_records_for_modal(
 
 
 @router.get(
-    "/product-analytics", response_model=list[ProductAnalyticsResponse]
+    "/product-analytics",
+    response_model=list[ProductAnalyticsResponse],
+    tags=["Analytics"],
 )
 def get_product_analytics(
     set_id: int = Query(..., gt=0), db: Session = Depends(get_db)
@@ -319,7 +326,11 @@ def get_product_analytics(
     return responses
 
 
-@router.put("/records/{record_id}", response_model=RecordItemResponse)
+@router.put(
+    "/records/{record_id}",
+    response_model=RecordItemResponse,
+    tags=["Records"],
+)
 def update_record(
     record_id: int,
     payload: RecordUpdate,
@@ -358,7 +369,10 @@ def update_record(
     return record
 
 @router.post(
-    "/records", response_model=RecordResponse, status_code=status.HTTP_201_CREATED
+    "/records",
+    response_model=RecordResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Records"],
 )
 def create_record(
     payload: RecordCreate, db: Session = Depends(get_db)
