@@ -1,0 +1,22 @@
+.edit-card-entry {
+  width: 100%;
+}
+
+.edit-card-entry__row {
+  display: grid;
+  gap: 18px;
+}
+
+.edit-card-entry__row--primary {
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+}
+
+.edit-card-entry__row--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 640px) {
+  .edit-card-entry__row--primary {
+    grid-template-columns: 1fr;
+  }
+}

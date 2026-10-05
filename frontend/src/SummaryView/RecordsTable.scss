@@ -1,0 +1,127 @@
+.table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrap .MuiTable-root {
+  min-width: 900px;
+  table-layout: fixed;
+}
+
+.table-sort-reset {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.table-sort-reset .MuiIconButton-root {
+  color: #99482f;
+}
+
+.table-sort-reset .MuiIconButton-root:hover {
+  background-color: #e4eee5;
+}
+
+.table-wrap .name-column {
+  width: 180px;
+}
+
+.table-wrap .total_boosters-column {
+  width: 70px;
+}
+
+.table-wrap .ex-column,
+.table-wrap .ir-column,
+.table-wrap .sir-column,
+.table-wrap .cc-column,
+.table-wrap .fr-column,
+.table-wrap .hr-column {
+  width: 40px;
+}
+
+.table-wrap .total-column {
+  width: 70px;
+}
+
+.table-wrap .biggest_hit_link-column {
+  width: 180px;
+}
+
+.table-wrap .in_product_id-column {
+  width: 110px;
+}
+
+.table-wrap .price-column {
+  width: 120px;
+}
+
+.booster-count-cell {
+  text-align: center;
+}
+
+.booster-count-cell .MuiTableSortLabel-root {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.table-state {
+  display: flex;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.table-wrap .MuiTableCell-head {
+  background: #25221f;
+  color: #fffdf8;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table-wrap .MuiTableCell-head .MuiTableSortLabel-root {
+  color: #fffdf8;
+  transition: color 120ms ease;
+}
+
+.table-wrap .MuiTableCell-head .MuiTableSortLabel-root:hover {
+  color: #c8dcc9;
+}
+
+.table-wrap .MuiTableCell-head .MuiTableSortLabel-icon {
+  color: #e58b68 !important;
+}
+
+.table-wrap .MuiTableCell-head .MuiTableSortLabel-root.Mui-active {
+  color: #f0a27f;
+}
+
+.table-wrap .MuiTableCell-head .MuiTableSortLabel-root.Mui-active .MuiTableSortLabel-icon {
+  color: #f0a27f !important;
+}
+
+.table-wrap .MuiTableCell-body {
+  color: #403b35;
+  white-space: nowrap;
+}
+
+.product-chip-cell > .MuiChip-root {
+  display: flex;
+  width: fit-content;
+  margin-inline: auto;
+}
+
+.table-wrap .MuiTableBody-root .MuiTableRow-hover:hover > .MuiTableCell-root {
+  background-color: #e4eee5;
+}
+
+.table-player-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

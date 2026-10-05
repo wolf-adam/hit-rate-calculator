@@ -1,0 +1,51 @@
+.app-shell {
+  width: min(1400px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 2rem 0 5rem;
+}
+
+.content-panel h6 {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+}
+
+.content-panel {
+  overflow: hidden;
+  border: 1px solid #ded8cc;
+  border-radius: 10px;
+  background: rgba(255, 253, 248, 0.78);
+}
+
+.app-shell > .MuiTabs-root {
+  margin-bottom: 18px;
+}
+
+.app-shell > .MuiTabs-root .MuiTabs-flexContainer {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    width: calc(100% - 24px);
+    padding: 20px 0 40px;
+  }
+
+  .app-shell > .MuiTabs-root {
+    width: 100%;
+  }
+
+  .app-shell > .MuiTabs-root .MuiTab-root {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .app-shell {
+    width: calc(100% - 16px);
+  }
+
+  .content-panel {
+    border-radius: 8px;
+  }
+}
