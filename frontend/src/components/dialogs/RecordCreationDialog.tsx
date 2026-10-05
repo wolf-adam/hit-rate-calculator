@@ -197,6 +197,14 @@ function DialogComponent({
       if (failedRecords.length > 0) {
         const savedCount = records.length - failedRecords.length
         setRecords(failedRecords)
+        let refreshFailure = ''
+        if (savedCount > 0) {
+          try {
+            onRecordsUpdated(await fetchRecordsForModal(set.id))
+          } catch {
+            refreshFailure = ' Saved records could not be refreshed.'
+          }
+        }
         const firstFailure = outcomes.find(
           (outcome) => outcome.status === 'rejected',
         )
@@ -205,7 +213,7 @@ function DialogComponent({
           : 'Please retry the failed rows.'
         onError(
           `${savedCount} of ${records.length} records saved; `
-          + `${failedRecords.length} failed. ${detail}`,
+          + `${failedRecords.length} failed. ${detail}${refreshFailure}`,
         )
         return
       }

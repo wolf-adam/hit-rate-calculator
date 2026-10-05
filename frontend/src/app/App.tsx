@@ -61,6 +61,7 @@ function App() {
     () => readSelectedSet() ?? "",
   );
   const [records, setRecords] = useState<RecordRow[]>([]);
+  const [recordsRefreshKey, setRecordsRefreshKey] = useState(0);
   const [productAnalytics, setProductAnalytics] = useState<ProductAnalytics[]>([]);
   const [productAnalyticsLoading, setProductAnalyticsLoading] = useState(false);
   const [productAnalyticsError, setProductAnalyticsError] = useState("");
@@ -208,11 +209,16 @@ function App() {
       }
     }
     void loadProductAnalytics();
-  }, [selectedSetId]);
+  }, [selectedSetId, recordsRefreshKey]);
 
   function handleSetChange(setId: number) {
     setSelectedSetId(setId);
     writeSelectedSet(setId);
+  }
+
+  function handleRecordsUpdated(nextRecords: RecordRow[]) {
+    setRecords(nextRecords);
+    setRecordsRefreshKey((current) => current + 1);
   }
 
   const selectedSet = sets.find((set) => set.id === selectedSetId);
@@ -268,7 +274,7 @@ function App() {
           records={records}
           loading={loading}
           products={products}
-          onRecordsUpdated={setRecords}
+          onRecordsUpdated={handleRecordsUpdated}
           onNotify={notify}
         />
       ) : (
@@ -290,7 +296,7 @@ function App() {
           cards={cards}
           cardsLoading={cardsLoading}
           onClose={() => setDialogOpen(false)}
-          onRecordsUpdated={setRecords}
+          onRecordsUpdated={handleRecordsUpdated}
           onError={(message) => notify(message, "error")}
           onSuccess={(message) => notify(message, "success")}
         />
@@ -305,7 +311,6 @@ function App() {
           setUserDialogOpen(false);
           notify(`${player.name} added successfully.`, "success");
         }}
-        onError={(message) => notify(message, "error")}
       />
       <Snackbar
         open={Boolean(toast)}
