@@ -19,7 +19,6 @@ interface ChartDatum {
   id: string;
   label: string;
   value: number;
-  percentage: number;
   color: string;
 }
 
@@ -72,11 +71,11 @@ const classData: ChartDatum[] = classes.map((pClass: ClassType) => {
   const classTotal = titanicData
     .filter((item: TitanicDatum) => item.Class === pClass)
     .reduce((acc: number, item: TitanicDatum) => acc + item.Count, 0);
+  const percentage = (classTotal / totalCount) * 100;
   return {
     id: pClass,
-    label: `${pClass} Class:`,
+    label: `${pClass} (${percentage.toFixed(0)}%)`,
     value: classTotal,
-    percentage: (classTotal / totalCount) * 100,
     color: classColors[pClass],
   };
 });
@@ -87,43 +86,33 @@ const classSurvivalData: ChartDatum[] = classes.flatMap((pClass: ClassType) => {
   return titanicData
     .filter((item: TitanicDatum) => item.Class === pClass)
     .sort((a: TitanicDatum, b: TitanicDatum) => (a.Survived > b.Survived ? 1 : -1))
-    .map((item: TitanicDatum) => ({
-      id: `${pClass}-${item.Survived}`,
-      label: item.Survived,
-      value: item.Count,
-      percentage: (item.Count / classTotal) * 100,
-      color: item.Survived === 'Yes' ? baseColor : `${baseColor}80`, // 80 is 50% opacity for 'No'
-    }));
+    .map((item: TitanicDatum) => {
+      const percentage = (item.Count / classTotal) * 100;
+      return {
+        id: `${pClass}-${item.Survived}`,
+        label: `${item.Survived} (${percentage.toFixed(0)}%)`,
+        value: item.Count,
+        color: item.Survived === 'Yes' ? baseColor : `${baseColor}80`, // 80 is 50% opacity for 'No'
+      };
+    });
 });
 
 // Create a simplified dataset that groups all classes together for Yes/No
+const survivedTotal = titanicData
+  .filter((item: TitanicDatum) => item.Survived === 'Yes')
+  .reduce((sum: number, item: TitanicDatum) => sum + item.Count, 0);
+const notSurvivedTotal = totalCount - survivedTotal;
 const survivalData: ChartDatum[] = [
   {
     id: 'Yes',
-    label: 'Survived:',
-    value: titanicData
-      .filter((item: TitanicDatum) => item.Survived === 'Yes')
-      .reduce((sum: number, item: TitanicDatum) => sum + item.Count, 0),
-    percentage:
-      (titanicData
-        .filter((item: TitanicDatum) => item.Survived === 'Yes')
-        .reduce((sum: number, item: TitanicDatum) => sum + item.Count, 0) /
-        totalCount) *
-      100,
+    label: `Yes (${((survivedTotal / totalCount) * 100).toFixed(0)}%)`,
+    value: survivedTotal,
     color: classColors['3rd'],
   },
   {
     id: 'No',
-    label: 'Did not survive:',
-    value: titanicData
-      .filter((item: TitanicDatum) => item.Survived === 'No')
-      .reduce((sum: number, item: TitanicDatum) => sum + item.Count, 0),
-    percentage:
-      (titanicData
-        .filter((item: TitanicDatum) => item.Survived === 'No')
-        .reduce((sum: number, item: TitanicDatum) => sum + item.Count, 0) /
-        totalCount) *
-      100,
+    label: `No (${((notSurvivedTotal / totalCount) * 100).toFixed(0)}%)`,
+    value: notSurvivedTotal,
     color: classColors['1st'],
   },
 ];
@@ -135,16 +124,14 @@ const survivalClassData: ChartDatum[] = [...titanicData]
     const baseColor = survivalData.find(
       (d: ChartDatum) => d.id === item.Survived,
     )!.color;
+    const groupTotal = survivalData.find(
+      (datum: ChartDatum) => datum.id === item.Survived,
+    )!.value;
+    const percentage = (item.Count / groupTotal) * 100;
     return {
       id: `${item.Class}-${item.Survived}`,
-      label: `${item.Class} class:`,
+      label: `${item.Class} (${percentage.toFixed(0)}%)`,
       value: item.Count,
-      percentage:
-        (item.Count /
-          (item.Survived === 'Yes'
-            ? survivalData[0]!.value
-            : survivalData[1]!.value)) *
-        100,
       color: hexToRgba(baseColor, opacityMap[item.Class] || 1),
     };
   });
@@ -208,8 +195,7 @@ export default function TitanicPie(): React.ReactElement {
                 innerRadius,
                 outerRadius: middleRadius,
                 data: classData,
-                arcLabel: (item) =>
-                  `${item.id} (${(item as any).percentage.toFixed(0)}%)`,
+                arcLabel: (item) => item.label ?? '',
                 valueFormatter: ({ value }) =>
                   `${value} out of ${totalCount} (${((value / totalCount) * 100).toFixed(0)}%)`,
                 highlightScope: { fade: 'global', highlight: 'item' },
@@ -220,8 +206,7 @@ export default function TitanicPie(): React.ReactElement {
                 innerRadius: middleRadius,
                 outerRadius: middleRadius + 20,
                 data: classSurvivalData,
-                arcLabel: (item) =>
-                  `${item.label} (${(item as any).percentage.toFixed(0)}%)`,
+                arcLabel: (item) => item.label ?? '',
                 valueFormatter: ({ value }) =>
                   `${value} out of ${totalCount} (${((value / totalCount) * 100).toFixed(0)}%)`,
                 arcLabelRadius: 160,
@@ -246,8 +231,7 @@ export default function TitanicPie(): React.ReactElement {
                 innerRadius,
                 outerRadius: middleRadius,
                 data: survivalData,
-                arcLabel: (item) =>
-                  `${item.id} (${(item as any).percentage.toFixed(0)}%)`,
+                arcLabel: (item) => item.label ?? '',
                 valueFormatter: ({ value }) =>
                   `${value} out of ${totalCount} (${((value / totalCount) * 100).toFixed(0)}%)`,
                 highlightScope: { fade: 'global', highlight: 'item' },
@@ -259,9 +243,7 @@ export default function TitanicPie(): React.ReactElement {
                 outerRadius: middleRadius + 20,
                 data: survivalClassData,
                 arcLabel: (item) => {
-                  const id = (item as any).id || '';
-                  const percentage = (item as any).percentage || 0;
-                  return `${id.split('-')[0]} (${percentage.toFixed(0)}%)`;
+                  return item.label ?? '';
                 },
                 arcLabelRadius: 160,
                 valueFormatter: ({ value }) =>

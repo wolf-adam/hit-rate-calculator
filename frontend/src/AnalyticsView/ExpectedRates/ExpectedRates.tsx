@@ -16,8 +16,6 @@ function formatConfidenceMargin(rate: number, sampleSize: number) {
   const probability = Math.min(1, Math.max(0, rate / 100));
   const zScore = 1.96;
   const denominator = 1 + (zScore * zScore) / sampleSize;
-  const center =
-    (probability + (zScore * zScore) / (2 * sampleSize)) / denominator;
   const margin =
     (zScore *
       Math.sqrt(

@@ -117,7 +117,7 @@ function DialogComponent({
     return () => {
       cancelled = true
     }
-  }, [open, set.id])
+  }, [open, set.id, onError, onRecordsUpdated])
 
   function updateRecord(
     index: number,

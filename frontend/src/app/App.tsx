@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, Snackbar } from "@mui/material";
 import {
   fetchEurToHufRate,
@@ -216,16 +216,21 @@ function App() {
     writeSelectedSet(setId);
   }
 
-  function handleRecordsUpdated(nextRecords: RecordRow[]) {
+  const handleRecordsUpdated = useCallback((nextRecords: RecordRow[]) => {
     setRecords(nextRecords);
     setRecordsRefreshKey((current) => current + 1);
-  }
+  }, []);
 
   const selectedSet = sets.find((set) => set.id === selectedSetId);
 
-  function notify(message: string, severity: "success" | "error") {
+  const notify = useCallback((message: string, severity: "success" | "error") => {
     setToast({ message, severity });
-  }
+  }, []);
+
+  const handleCreationError = useCallback(
+    (message: string) => notify(message, "error"),
+    [notify],
+  );
 
   function navigateTo(view: AppView) {
     const path = view === "analytics" ? "/analytics" : "/";
@@ -297,7 +302,7 @@ function App() {
           cardsLoading={cardsLoading}
           onClose={() => setDialogOpen(false)}
           onRecordsUpdated={handleRecordsUpdated}
-          onError={(message) => notify(message, "error")}
+          onError={handleCreationError}
           onSuccess={(message) => notify(message, "success")}
         />
       )}

@@ -32,7 +32,6 @@ function CreationCardEntry({
   const matchedCard = cards.find(
     (card) => normalizeName(card.name) === normalizeName(value.name),
   )
-  const firstName = value.name.trim().split(/\s+/, 1)[0] ?? ''
   const metadataDisabled = disabled || cardsLoading || Boolean(matchedCard)
 
   function updateField(field: keyof CardDraft, fieldValue: string) {
