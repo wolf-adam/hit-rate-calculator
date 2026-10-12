@@ -48,6 +48,7 @@ function App() {
     message: string;
     severity: "success" | "error";
   } | null>(null);
+  const [toastOpen, setToastOpen] = useState(false);
   const [currency, setCurrency] = useState<Currency>(() => readCurrency());
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [sets, setSets] = useState<SetOption[]>(() => readCachedSets());
@@ -225,6 +226,7 @@ function App() {
 
   const notify = useCallback((message: string, severity: "success" | "error") => {
     setToast({ message, severity });
+    setToastOpen(true);
   }, []);
 
   const handleCreationError = useCallback(
@@ -279,6 +281,8 @@ function App() {
           records={records}
           loading={loading}
           products={products}
+          cards={cards}
+          cardsLoading={cardsLoading}
           onRecordsUpdated={handleRecordsUpdated}
           onNotify={notify}
         />
@@ -317,20 +321,22 @@ function App() {
           notify(`${player.name} added successfully.`, "success");
         }}
       />
-      <Snackbar
-        open={Boolean(toast)}
-        autoHideDuration={4000}
-        onClose={() => setToast(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          severity={toast?.severity ?? "success"}
-          onClose={() => setToast(null)}
-          variant="filled"
+      {toast && (
+        <Snackbar
+          open={toastOpen}
+          autoHideDuration={4000}
+          onClose={() => setToastOpen(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
-          {toast?.message}
-        </Alert>
-      </Snackbar>
+          <Alert
+            severity={toast.severity}
+            onClose={() => setToastOpen(false)}
+            variant="filled"
+          >
+            {toast.message}
+          </Alert>
+        </Snackbar>
+      )}
     </main>
   );
 }
