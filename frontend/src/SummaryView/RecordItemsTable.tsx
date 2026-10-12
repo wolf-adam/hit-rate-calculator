@@ -10,8 +10,10 @@ import {
   TablePagination,
   TableRow,
   TableSortLabel,
+  Stack,
   Tooltip,
 } from '@mui/material'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import { useState } from 'react'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import { columns, productColors } from '../config/constants'
@@ -43,6 +45,7 @@ type RecordItemsTableProps = {
   currency: Currency
   exchangeRate: number
   onEdit: (record: RecordItem) => void
+  onDelete: (record: RecordItem) => void
 }
 
 function RecordItemsTable({
@@ -54,6 +57,7 @@ function RecordItemsTable({
   currency,
   exchangeRate,
   onEdit,
+  onDelete,
 }: RecordItemsTableProps) {
   const [sortKey, setSortKey] = useState<ItemSortKey>('date_created')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
@@ -230,15 +234,26 @@ function RecordItemsTable({
                         {formatPrice(item.price, currency, exchangeRate)}
                       </TableCell>
                       <TableCell>
-                        <Tooltip title="Edit record">
-                          <IconButton
-                            size="small"
-                            aria-label={`Edit record ${item.id}`}
-                            onClick={() => onEdit(item)}
-                          >
-                            <EditOutlinedIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                        <Stack direction="row" spacing={0.5}>
+                          <Tooltip title="Edit record">
+                            <IconButton
+                              size="small"
+                              aria-label={`Edit record ${item.id}`}
+                              onClick={() => onEdit(item)}
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete record">
+                            <IconButton
+                              size="small"
+                              aria-label={`Delete record ${item.id}`}
+                              onClick={() => onDelete(item)}
+                            >
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Stack>
                       </TableCell>
                     </TableRow>
                   )

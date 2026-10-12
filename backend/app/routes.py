@@ -422,6 +422,22 @@ def update_record(
     return record
 
 
+@router.delete(
+    "/records/{record_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["Records"],
+)
+def delete_record(record_id: int, db: Session = Depends(get_db)) -> None:
+    record = db.get(Record, record_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Record not found"
+        )
+
+    db.delete(record)
+    db.commit()
+
+
 @router.put(
     "/records/{record_id}/edit",
     response_model=RecordItemResponse,

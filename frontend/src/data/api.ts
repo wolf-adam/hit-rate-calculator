@@ -108,6 +108,10 @@ export async function updateRecord(
   return data
 }
 
+export async function deleteRecord(recordId: number): Promise<void> {
+  await client.delete(`/records/${recordId}`)
+}
+
 export async function updateRecordWithCard(
   recordId: number,
   card: Omit<CardDraft, 'card_id' | 'price'> & { price: number },

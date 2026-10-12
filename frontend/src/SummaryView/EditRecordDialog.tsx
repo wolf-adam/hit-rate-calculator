@@ -144,61 +144,61 @@ function EditRecordDialog({
 
   return (
     <Dialog
-      className="edit-record-dialog"
-      open={Boolean(record)}
-      onClose={saving ? undefined : onClose}
-      fullWidth
-      maxWidth="sm"
-    >
-      <DialogTitle>Edit record</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
-          {error && <Alert severity="error">{error}</Alert>}
-          <ProductSelect
-            onChange={(value) => updateField('in_product_id', value)}
-            products={products}
-            aria-label="record product"
-            value={form?.in_product_id ?? ''}
-            fullWidth
-          />
-          <div className="record-form">
-            {visibleRarityFields.map((field) => (
-              <TextField
-                key={field.key}
-                className={`record-field record-field--${field.key}`}
-                label={field.label}
-                type="number"
-                slotProps={{ htmlInput: { min: 0, step: 1 } }}
-                value={form?.[field.key] ?? ''}
-                onChange={(event) => updateField(field.key, event.target.value)}
-              />
-            ))}
-            <EditCardEntry
-              value={form?.card ?? {
-                name: '',
-                link: '',
-                image_src: '',
-                price: '',
-              }}
-              onChange={updateCardDraft}
-              cards={cards}
-              cardsLoading={cardsLoading}
-              disabled={saving}
+        className="edit-record-dialog"
+        open={Boolean(record)}
+        onClose={saving ? undefined : onClose}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Edit record</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            {error && <Alert severity="error">{error}</Alert>}
+            <ProductSelect
+              onChange={(value) => updateField('in_product_id', value)}
+              products={products}
+              aria-label="record product"
+              value={form?.in_product_id ?? ''}
+              fullWidth
             />
-          </div>
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={saving}>Cancel</Button>
-        <Button
-          variant="contained"
-          onClick={() => void handleSave()}
-          disabled={saving || !form?.in_product_id || !form.card.link
-            || !form.card.name || !form.card.image_src || !form.card.price}
-        >
-          {saving ? 'Saving…' : 'Save changes'}
-        </Button>
-      </DialogActions>
+            <div className="record-form">
+              {visibleRarityFields.map((field) => (
+                <TextField
+                  key={field.key}
+                  className={`record-field record-field--${field.key}`}
+                  label={field.label}
+                  type="number"
+                  slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                  value={form?.[field.key] ?? ''}
+                  onChange={(event) => updateField(field.key, event.target.value)}
+                />
+              ))}
+              <EditCardEntry
+                value={form?.card ?? {
+                  name: '',
+                  link: '',
+                  image_src: '',
+                  price: '',
+                }}
+                onChange={updateCardDraft}
+                cards={cards}
+                cardsLoading={cardsLoading}
+                disabled={saving}
+              />
+            </div>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={() => void handleSave()}
+            disabled={saving || !form?.in_product_id || !form.card.link
+              || !form.card.name || !form.card.image_src || !form.card.price}
+          >
+            {saving ? 'Saving…' : 'Save changes'}
+          </Button>
+        </DialogActions>
     </Dialog>
   )
 }

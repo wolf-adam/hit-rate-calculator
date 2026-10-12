@@ -1,8 +1,14 @@
 import { Fragment, useState, type ReactNode } from 'react'
 import {
   Box,
+  Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Table,
   TableBody,
@@ -17,7 +23,12 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import { fetchRecords } from '../data/api'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import {
+  deleteRecord,
+  fetchRecords,
+  getApiErrorMessage,
+} from '../data/api'
 import { availableRarities, columns, productColors } from '../config/constants'
 import type { Currency } from '../data/storage'
 import type { Card, ProductOption, RecordItem, RecordRow, SetOption } from '../types'
@@ -54,6 +65,8 @@ const RecordsTable = ({
 }: RecordsTableProps) => {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
   const [editingRecord, setEditingRecord] = useState<RecordItem | null>(null)
+  const [deletingRecord, setDeletingRecord] = useState<RecordItem | null>(null)
+  const [deletePending, setDeletePending] = useState(false)
   const [sortKey, setSortKey] = useState<keyof RecordRow | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
@@ -61,6 +74,27 @@ const RecordsTable = ({
     if (!selectedSet) return
     const refreshedRecords = await fetchRecords(selectedSet.id)
     onRecordsUpdated(refreshedRecords)
+  }
+
+  async function confirmDeleteRecord() {
+    if (!deletingRecord || deletePending) return
+
+    setDeletePending(true)
+    try {
+      await deleteRecord(deletingRecord.id)
+      setDeletingRecord(null)
+      try {
+        await refreshRecordsAfterModification()
+      } catch {
+        onNotify('Record deleted, but the list could not be refreshed.', 'error')
+        return
+      }
+      onNotify('Record deleted successfully.', 'success')
+    } catch (error) {
+      onNotify(getApiErrorMessage(error, 'Could not delete this record.'), 'error')
+    } finally {
+      setDeletePending(false)
+    }
   }
 
   const visibleColumns = columns.filter((column) => {
@@ -273,6 +307,7 @@ const RecordsTable = ({
                   currency={currency}
                   exchangeRate={exchangeRate}
                   onEdit={setEditingRecord}
+                  onDelete={setDeletingRecord}
                 />
               </Fragment>
             )
@@ -298,6 +333,36 @@ const RecordsTable = ({
         onSuccess={(message) => onNotify(message, 'success')}
         onSaved={refreshRecordsAfterModification}
       />
+      <Dialog
+        open={Boolean(deletingRecord)}
+        onClose={deletePending ? undefined : () => setDeletingRecord(null)}
+        aria-labelledby="delete-record-title"
+        aria-describedby="delete-record-description"
+      >
+        <DialogTitle id="delete-record-title">Delete this record?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-record-description">
+            Opening #{deletingRecord?.id} will be permanently removed. This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeletingRecord(null)}
+            disabled={deletePending}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            startIcon={<DeleteOutlineIcon />}
+            onClick={() => void confirmDeleteRecord()}
+            disabled={deletePending}
+          >
+            {deletePending ? 'Deleting…' : 'Delete record'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </TableContainer>
   )
 }
