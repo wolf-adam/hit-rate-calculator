@@ -16,6 +16,7 @@ type CreationCardEntryProps = {
   cards: Card[]
   cardsLoading: boolean
   disabled?: boolean
+  allowMatchedCardMetadataEdit?: boolean
 }
 
 function normalizeName(value: string) {
@@ -28,11 +29,14 @@ function CreationCardEntry({
   cards,
   cardsLoading,
   disabled = false,
+  allowMatchedCardMetadataEdit = false,
 }: CreationCardEntryProps) {
   const matchedCard = cards.find(
     (card) => normalizeName(card.name) === normalizeName(value.name),
   )
-  const metadataDisabled = disabled || cardsLoading || Boolean(matchedCard)
+  const metadataDisabled = disabled || cardsLoading || (
+    !allowMatchedCardMetadataEdit && Boolean(matchedCard)
+  )
 
   function updateField(field: keyof CardDraft, fieldValue: string) {
     if (field === 'name') {

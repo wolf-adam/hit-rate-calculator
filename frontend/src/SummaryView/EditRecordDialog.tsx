@@ -14,6 +14,7 @@ import {
   updateRecordWithCard,
 } from '../data/api'
 import type {
+  Card,
   CardDraft,
   ProductOption,
   RecordItem,
@@ -29,6 +30,8 @@ type EditRecordDialogProps = {
   record: RecordItem | null
   selectedSet?: SetOption
   products: ProductOption[]
+  cards: Card[]
+  cardsLoading: boolean
   onClose: () => void
   onSaved: () => Promise<void>
   onError: (message: string) => void
@@ -78,6 +81,8 @@ function EditRecordDialog({
   record,
   selectedSet,
   products,
+  cards,
+  cardsLoading,
   onClose,
   onSaved,
   onError,
@@ -111,7 +116,6 @@ function EditRecordDialog({
 
     try {
       const payload: RecordUpdate = {
-        card_id: form.card.card_id,
         in_product_id: Number(form.in_product_id),
         ex: Number(form.ex),
         ir: Number(form.ir),
@@ -119,9 +123,6 @@ function EditRecordDialog({
         cc: Number(form.cc),
         fr: Number(form.fr),
         hr: Number(form.hr),
-        biggest_hit_link: form.card.link,
-        biggest_hit_src: form.card.image_src,
-        price: Number(form.card.price),
       }
       await updateRecordWithCard(record.id, {
         name: form.card.name,
@@ -180,6 +181,9 @@ function EditRecordDialog({
                 price: '',
               }}
               onChange={updateCardDraft}
+              cards={cards}
+              cardsLoading={cardsLoading}
+              disabled={saving}
             />
           </div>
         </Stack>
