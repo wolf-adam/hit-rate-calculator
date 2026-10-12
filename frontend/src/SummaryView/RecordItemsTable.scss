@@ -1,0 +1,65 @@
+.table-wrap .table-items .date-column {
+  width: 100px;
+}
+
+.table-wrap .table-items .ex-column,
+.table-wrap .table-items .ir-column,
+.table-wrap .table-items .sir-column,
+.table-wrap .table-items .cc-column,
+.table-wrap .table-items .fr-column,
+.table-wrap .table-items .hr-column {
+  width: 30px;
+}
+
+.table-items .product-column-header {
+  width: 100px;
+  max-width: 100px;
+}
+
+.table-wrap .table-items .product-column {
+  width: 90px;
+}
+
+.table-wrap .table-items .biggest-hit-column {
+  width: 170px;
+}
+
+.table-wrap .table-items .price-column {
+  width: 80px;
+}
+
+.table-wrap .table-items .actions-column {
+  width: 40px;
+}
+
+.table-items-cell {
+  padding: 0 !important;
+  border-bottom: 0;
+}
+
+.table-items {
+  padding: 8px 16px 16px;
+  background: rgba(245, 241, 232, 0.55);
+}
+
+.table-items .MuiTable-root {
+  min-width: 760px;
+  table-layout: fixed;
+}
+
+.table-wrap .table-items .MuiTableCell-head {
+  background: #e8e1d5;
+  color: #403b35;
+}
+
+.table-wrap .table-items .MuiTableCell-head .MuiTableSortLabel-root {
+  color: #403b35;
+}
+
+.table-wrap .table-items .MuiTableCell-head .MuiTableSortLabel-root:hover {
+  color: #25221f;
+}
+
+.table-wrap .table-items .MuiTableCell-head .MuiTableSortLabel-icon {
+  color: #99482f !important;
+}
