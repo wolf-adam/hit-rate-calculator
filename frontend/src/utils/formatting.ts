@@ -17,9 +17,13 @@ export const formatBiggestHitLink = (url: string | null): string => {
   if (!url) return ''
   const path = url.split(/[?#]/, 1)[0]
   const lastSegment = path.split(/[\\/]/).pop() ?? url
-  const decodedName = decodeURIComponent(lastSegment)
-    .replace(/-V\d+(?=-|$)/i, '')
-    .trim()
+  let decodedName = lastSegment
+   try {
+     decodedName = decodeURIComponent(lastSegment)
+   } catch {
+     // Preserve malformed URL segments instead of failing the records view.
+   }
+   decodedName = decodedName.replace(/-V\d+(?=-|$)/i, '').trim()
   const extendedCodeMatch = decodedName.match(
     /^(.+?)-(\d+[A-Za-z])([A-Za-z]*?)-?(\d{1,3})$/,
   )
