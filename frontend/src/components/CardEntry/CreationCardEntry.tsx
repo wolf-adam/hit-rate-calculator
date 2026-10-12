@@ -8,7 +8,6 @@ import {
   Typography,
 } from '@mui/material'
 import type { Card, CardDraft } from '../../types'
-import { getPkmnCardsSearchUrl } from '../../utils/formatting'
 import './CreationCardEntry.scss'
 
 type CreationCardEntryProps = {
@@ -143,7 +142,7 @@ function CreationCardEntry({
           helperText={value.name ? (
             <span>Find card image on
               <Link
-                href={getPkmnCardsSearchUrl(value.name)}
+                href={`https://pkmncards.com/?s=${encodeURIComponent(value.name.split(' ')[0])}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
