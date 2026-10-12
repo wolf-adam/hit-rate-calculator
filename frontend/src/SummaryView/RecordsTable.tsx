@@ -20,7 +20,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { fetchRecords } from '../data/api'
 import { availableRarities, columns, productColors } from '../config/constants'
 import type { Currency } from '../data/storage'
-import type { ProductOption, RecordItem, RecordRow, SetOption } from '../types'
+import type { Card, ProductOption, RecordItem, RecordRow, SetOption } from '../types'
 import { formatNumber, formatPrice, formatBiggestHitLink } from '../utils/formatting'
 import EditRecordDialog from './EditRecordDialog'
 import BiggestHitLink from './BiggestHitLink'
@@ -34,6 +34,8 @@ type RecordsTableProps = {
   exchangeRate: number
   currency: Currency
   products: ProductOption[]
+  cards: Card[]
+  cardsLoading: boolean
   onRecordsUpdated: (records: RecordRow[]) => void
   onNotify: (message: string, severity: 'success' | 'error') => void
 }
@@ -45,6 +47,8 @@ const RecordsTable = ({
   exchangeRate,
   currency,
   products,
+  cards,
+  cardsLoading,
   onRecordsUpdated,
   onNotify,
 }: RecordsTableProps) => {
@@ -287,6 +291,8 @@ const RecordsTable = ({
         record={editingRecord}
         selectedSet={selectedSet}
         products={products}
+        cards={cards}
+        cardsLoading={cardsLoading}
         onClose={() => setEditingRecord(null)}
         onError={(message) => onNotify(message, 'error')}
         onSuccess={(message) => onNotify(message, 'success')}

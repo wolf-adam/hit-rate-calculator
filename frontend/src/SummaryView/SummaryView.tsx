@@ -6,6 +6,7 @@ import {
 import RecordsTable from './RecordsTable'
 import type { Currency } from '../data/storage'
 import type {
+  Card,
   ProductOption,
   RecordRow,
   SetOption,
@@ -18,6 +19,8 @@ type SummaryViewProps = {
   records: RecordRow[]
   loading: boolean
   products: ProductOption[]
+  cards: Card[]
+  cardsLoading: boolean
   onRecordsUpdated: (records: RecordRow[]) => void
   onNotify: (message: string, severity: 'success' | 'error') => void
 }
@@ -29,6 +32,8 @@ function SummaryView({
   records,
   loading,
   products,
+  cards,
+  cardsLoading,
   onRecordsUpdated,
   onNotify,
 }: SummaryViewProps) {
@@ -49,6 +54,8 @@ function SummaryView({
           exchangeRate={exchangeRate}
           currency={currency}
           products={products}
+          cards={cards}
+          cardsLoading={cardsLoading}
           onRecordsUpdated={onRecordsUpdated}
           onNotify={onNotify}
         />

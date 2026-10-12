@@ -97,6 +97,8 @@ class RecordCreate(BaseModel):
 
 
 class RecordUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     card_id: int | None = Field(default=None, gt=0)
     in_product_id: int = Field(gt=0)
     ex: int = Field(ge=0)
@@ -105,9 +107,6 @@ class RecordUpdate(BaseModel):
     cc: int = Field(ge=0)
     fr: int = Field(ge=0)
     hr: int = Field(ge=0)
-    biggest_hit_link: str | None = Field(default=None, max_length=500)
-    biggest_hit_src: str | None = Field(default=None, max_length=500)
-    price: Decimal = Field(ge=0)
 
 
 class RecordWithCardUpdate(BaseModel):

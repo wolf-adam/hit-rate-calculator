@@ -93,7 +93,10 @@ export type RecordItem = {
   card?: Card
 }
 
-export type RecordUpdate = Omit<RecordItem, 'id' | 'date_created'>
+export type RecordUpdate = Pick<
+  RecordItem,
+  'card_id' | 'in_product_id' | 'ex' | 'ir' | 'sir' | 'cc' | 'fr' | 'hr'
+>
 
 export type NewRecord = Omit<
   RecordRow,

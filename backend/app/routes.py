@@ -412,14 +412,7 @@ def update_record(
             status_code=status.HTTP_404_NOT_FOUND, detail="Card not found"
         )
 
-    update_values = payload.model_dump(
-        exclude={
-            "card_id",
-            "biggest_hit_link",
-            "biggest_hit_src",
-            "price",
-        }
-    )
+    update_values = payload.model_dump(exclude={"card_id"})
     if card is not None:
         update_values["card_id"] = card.id
     for field, value in update_values.items():
@@ -451,38 +444,45 @@ def update_record_with_card(
 
     card = record.card
     normalized_link = normalize_card_link(payload.card.link)
-    duplicate_name = db.scalar(
-        select(Card.id).where(
-            func.lower(Card.name) == payload.card.name.strip().lower(),
-            Card.id != card.id if card is not None else True,
-        )
-    )
-    if duplicate_name is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A card with this name already exists.",
-        )
-    duplicate_link = db.scalar(
-        select(Card.id).where(
-            Card.link == normalized_link,
-            Card.id != card.id if card is not None else True,
-        )
-    )
-    if duplicate_link is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A card with this link already exists.",
-        )
-
     if card is None:
-        card = Card(
-            name=payload.card.name,
-            link=normalized_link,
-            image_src=payload.card.image_src,
-            price=payload.card.price,
+        card = db.scalar(
+            select(Card).where(
+                func.lower(Card.name) == payload.card.name.strip().lower()
+            )
         )
-        db.add(card)
+        if card is None:
+            card = db.scalar(select(Card).where(Card.link == normalized_link))
+        if card is None:
+            card = Card(
+                name=payload.card.name,
+                link=normalized_link,
+                image_src=payload.card.image_src,
+                price=payload.card.price,
+            )
+            db.add(card)
     else:
+        duplicate_name = db.scalar(
+            select(Card.id).where(
+                func.lower(Card.name) == payload.card.name.strip().lower(),
+                Card.id != card.id,
+            )
+        )
+        if duplicate_name is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="A card with this name already exists.",
+            )
+        duplicate_link = db.scalar(
+            select(Card.id).where(
+                Card.link == normalized_link,
+                Card.id != card.id,
+            )
+        )
+        if duplicate_link is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="A card with this link already exists.",
+            )
         card.name = payload.card.name
         card.link = normalized_link
         card.image_src = payload.card.image_src
