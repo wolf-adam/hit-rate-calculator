@@ -21,8 +21,8 @@ const client = axios.create({ baseURL: apiBaseUrl })
 const exchangeClient = axios.create({ baseURL: 'https://api.frankfurter.dev/v1' })
 
 client.interceptors.request.use(async (config) => {
-  const session = await authClient?.getSession()
-  const token = session?.data?.session?.token
+  const { data } = await authClient.token()
+  const token = data?.token
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

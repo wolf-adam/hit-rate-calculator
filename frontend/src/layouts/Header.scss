@@ -1,7 +1,7 @@
 .page-header {
   margin-bottom: 24px;
 
-  .MuiButton-root {
+  .MuiButton-contained {
     padding: 12px 22px;
     border-radius: 8px;
     background: #be5c3c;
@@ -9,7 +9,7 @@
     font-weight: 700;
   }
 
-  .MuiButton-root:hover {
+  .MuiButton-contained:hover {
     background: #99482f;
     box-shadow: none;
   }
@@ -127,15 +127,57 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 18px;
+}
+
+.creation-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-right: 18px;
+  border-right: 1px solid #d6d1c9;
+}
+
+.page-header .add-user-button {
+  border-color: #80917f;
+  background: transparent;
+  color: #455848;
+}
+
+.page-header .add-user-button:hover {
+  border-color: #607561;
+  background: #e4eee5;
+}
+
+.page-header .sign-out-button {
+  border-color: #d4c5bb;
+  background: #fff;
+  color: #62534a;
+}
+
+.page-header .sign-out-button:hover {
+  border-color: #be5c3c;
+  background: #f7ebe6;
+  color: #8a422f;
+}
+
+.page-header .currency-toggle-button {
+  min-width: 96px;
+  border-color: #a9b6a7;
+  background: #fff;
+  color: #455848;
+}
+
+.page-header .currency-toggle-button:hover {
+  border-color: #80917f;
+  background: #e4eee5;
 }
 
 .header-actions > * {
   flex-shrink: 0;
 }
 
-.header-actions .MuiButton-root,
-.header-actions .MuiToggleButtonGroup-root {
+.header-actions .MuiButton-root {
   height: 44px;
 }
 
@@ -169,7 +211,14 @@
 
   .header-actions {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .creation-actions {
+    flex-wrap: wrap;
+    border-right: 0;
+    padding-right: 0;
   }
 }
 

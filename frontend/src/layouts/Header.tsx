@@ -4,15 +4,16 @@ import {
   IconButton,
   MenuItem,
   Select,
-  ToggleButton,
-  ToggleButtonGroup,
   Menu,
   Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import QueryStatsOutlinedIcon from "@mui/icons-material/QueryStatsOutlined";
-import { UserButton } from "@neondatabase/auth-ui";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import PersonAddAlt1OutlinedIcon from "@mui/icons-material/PersonAddAlt1Outlined";
 import type { Currency } from "../data/storage";
 import type { SetOption } from "../types";
 import "./Header.scss";
@@ -24,6 +25,7 @@ type HeaderProps = {
   players: { id: number; name: string }[];
   products: { id: number; name: string }[];
   onAddUser: () => void;
+  onSignOut: () => void | Promise<void>;
   setDialogOpen: (open: boolean) => void;
   onSetChange: (setId: number) => void;
   onCurrencyChange: (currency: Currency) => void;
@@ -38,6 +40,7 @@ function Header({
   players,
   products,
   onAddUser,
+  onSignOut,
   setDialogOpen,
   onSetChange,
   onCurrencyChange,
@@ -87,39 +90,46 @@ function Header({
         </div>
         <div className="header-actions">
           {activeView === "summary" && (
-            <>
-            <Button
-              variant="contained"
-              onClick={onAddUser}
-            >
-              + Add new user
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setDialogOpen(true)}
-              disabled={!canCreate}
-            >
-              + Add record
-            </Button>
-            <ToggleButtonGroup
-              size="small"
-              exclusive
-              value={currency}
-              onChange={(_, nextCurrency: Currency | null) => {
-                if (nextCurrency) onCurrencyChange(nextCurrency);
-              }}
-              onClick={(event) => {
-                event.stopPropagation();
-                onCurrencyChange(currency === "EUR" ? "HUF" : "EUR");
-              }}
-              aria-label="display currency"
-            >
-              <ToggleButton value="EUR" aria-label="EUR">EUR</ToggleButton>
-              <ToggleButton value="HUF" aria-label="HUF">HUF</ToggleButton>
-            </ToggleButtonGroup>
-            </>
+            <div className="creation-actions">
+              <Button
+                className="add-user-button"
+                variant="outlined"
+                startIcon={<PersonAddAlt1OutlinedIcon />}
+                onClick={onAddUser}
+              >
+                Add user
+              </Button>
+              <Button
+                className="add-record-button"
+                variant="contained"
+                startIcon={<AddCircleOutlineIcon />}
+                onClick={() => setDialogOpen(true)}
+                disabled={!canCreate}
+              >
+                Add record
+              </Button>
+            </div>
           )}
-          <UserButton />
+          {activeView === "summary" && (
+            <Button
+              className="currency-toggle-button"
+              variant="outlined"
+              startIcon={<SwapHorizIcon />}
+              onClick={() => onCurrencyChange(currency === "EUR" ? "HUF" : "EUR")}
+              aria-label={`Switch display currency to ${currency === "EUR" ? "HUF" : "EUR"}`}
+              title={`Switch to ${currency === "EUR" ? "HUF" : "EUR"}`}
+            >
+              {currency}
+            </Button>
+          )}
+          <Button
+            className="sign-out-button"
+            variant="outlined"
+            startIcon={<LogoutOutlinedIcon />}
+            onClick={() => void onSignOut()}
+          >
+            Sign out
+          </Button>
         </div>
       </div>
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>

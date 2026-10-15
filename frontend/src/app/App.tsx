@@ -2,21 +2,21 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import {
   BrowserRouter,
-  Link,
+  Navigate,
   Route,
   Routes,
   useLocation,
   useNavigate,
+  useSearchParams,
 } from "react-router-dom";
 import {
-  AuthView,
-  NeonAuthUIProvider,
-  RedirectToSignIn,
-  SignedIn,
-  SignedOut,
-} from "@neondatabase/auth-ui";
-import "@neondatabase/auth-ui/css";
-import { Alert, Paper, Snackbar, Typography } from "@mui/material";
+  Alert,
+  Button,
+  CircularProgress,
+  Paper,
+  Snackbar,
+  Typography,
+} from "@mui/material";
 import {
   fetchEurToHufRate,
   fetchCards,
@@ -47,7 +47,11 @@ import type {
   Card,
   SetOption,
 } from "../types";
-import { authClient, isAuthConfigured } from "../auth/client";
+import {
+  authClient,
+  isAuthConfigured,
+  NEON_AUTH_SESSION_VERIFIER_PARAM_NAME,
+} from "../auth/client";
 import SummaryView from "../SummaryView/SummaryView";
 import AnalyticsView from "../AnalyticsView/AnalyticsView";
 import RecordCreationDialog from "../components/dialogs/RecordCreationDialog";
@@ -62,7 +66,7 @@ function getViewFromPath(pathname: string): AppView {
 }
 
 function App() {
-  if (!isAuthConfigured || !authClient) {
+  if (!isAuthConfigured) {
     return (
       <main className="auth-page">
         <Alert severity="warning" variant="outlined">
@@ -81,69 +85,110 @@ function App() {
 }
 
 function AuthProviderShell() {
-  const navigate = useNavigate();
-
   return (
-    <NeonAuthUIProvider
-      authClient={authClient!}
-      navigate={navigate}
-      Link={RouterLink}
-      basePath="/"
-      social={{ providers: ["google"] }}
-    >
-      <Routes>
-        <Route path="/sign-in" element={<AuthPage pathname="sign-in" />} />
-        <Route path="/sign-up" element={<AuthPage pathname="sign-up" />} />
-        <Route path="/sign-out" element={<AuthPage pathname="sign-out" />} />
-        <Route
-          path="*"
-          element={(
-            <RequireAuth>
-              <AppShell />
-            </RequireAuth>
-          )}
-        />
-      </Routes>
-    </NeonAuthUIProvider>
+    <Routes>
+      <Route path="/sign-in" element={<AuthPage />} />
+      <Route path="/sign-up" element={<Navigate to="/sign-in" replace />} />
+      <Route
+        path="*"
+        element={(
+          <RequireAuth>
+            <AppShell />
+          </RequireAuth>
+        )}
+      />
+    </Routes>
   );
 }
 
-function RouterLink({
-  href,
-  className,
-  children,
-}: {
-  href: string;
-  className?: string;
-  children: ReactNode;
-}) {
-  return <Link to={href} className={className}>{children}</Link>;
-}
+function AuthPage() {
+  const [searchParams] = useSearchParams();
+  const { data: session, isPending } = authClient.useSession();
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [error, setError] = useState("");
+  const requestedRedirect = searchParams.get("redirectTo");
+  const redirectTo = requestedRedirect?.startsWith("/") &&
+    !requestedRedirect.startsWith("//")
+    ? requestedRedirect
+    : "/";
 
-function AuthPage({
-  pathname,
-}: {
-  pathname: "sign-in" | "sign-up" | "sign-out";
-}) {
+  async function signInWithGoogle() {
+    setIsSigningIn(true);
+    setError("");
+    try {
+      const result = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: redirectTo,
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Google sign-in could not be started.");
+      } else if (result.data?.url) {
+        window.location.assign(result.data.url);
+      }
+    } catch {
+      setError("Google sign-in could not be started.");
+    } finally {
+      setIsSigningIn(false);
+    }
+  }
+
+  if (session) return <Navigate to={redirectTo} replace />;
+
   return (
     <main className="auth-page">
       <Paper className="auth-card" elevation={0}>
         <Typography className="auth-brand">HIT RATE CALCULATOR</Typography>
-        <AuthView pathname={pathname} />
+        <Typography variant="h6" gutterBottom>Sign in</Typography>
+        {error && <Alert severity="error">{error}</Alert>}
+        <Button
+          fullWidth
+          variant="contained"
+          disabled={isPending || isSigningIn}
+          onClick={() => void signInWithGoogle()}
+        >
+          {isPending || isSigningIn
+            ? <CircularProgress size={20} color="inherit" />
+            : "Continue with Google"}
+        </Button>
       </Paper>
     </main>
   );
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <SignedIn>{children}</SignedIn>
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
-    </>
-  );
+  const { data: session, isPending } = authClient.useSession();
+  const location = useLocation();
+
+  useEffect(() => {
+    const callbackUrl = new URL(window.location.href);
+    if (!session || !callbackUrl.searchParams.has(NEON_AUTH_SESSION_VERIFIER_PARAM_NAME)) {
+      return;
+    }
+    callbackUrl.searchParams.delete(NEON_AUTH_SESSION_VERIFIER_PARAM_NAME);
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${callbackUrl.pathname}${callbackUrl.search}${callbackUrl.hash}`,
+    );
+  }, [location.search, session]);
+
+  if (isPending) {
+    return (
+      <main className="auth-page">
+        <CircularProgress aria-label="Checking sign-in" />
+      </main>
+    );
+  }
+  if (!session) {
+    const redirectTo = `${location.pathname}${location.search}${location.hash}`;
+    return (
+      <Navigate
+        to={`/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`}
+        replace
+      />
+    );
+  }
+  return <>{children}</>;
 }
 
 function AppShell() {
@@ -351,6 +396,10 @@ function AppShell() {
         players={players}
         products={products}
         onAddUser={() => setUserDialogOpen(true)}
+        onSignOut={async () => {
+          const result = await authClient.signOut();
+          if (!result.error) navigate("/sign-in", { replace: true });
+        }}
         setDialogOpen={setDialogOpen}
         onSetChange={handleSetChange}
         onCurrencyChange={(nextCurrency) => {

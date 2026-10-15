@@ -60,7 +60,7 @@ class RequireAdminTests(unittest.TestCase):
                 return_value={
                     "sub": "user-1",
                     "email": "ADMIN@example.com",
-                    "email_verified": True,
+                    "emailVerified": True,
                 },
             ),
         ):
@@ -74,9 +74,14 @@ class RequireAdminTests(unittest.TestCase):
             {
                 "sub": "user-1",
                 "email": "admin@example.com",
-                "email_verified": False,
+                "emailVerified": False,
             },
             {"sub": "user-1", "email": "admin@example.com"},
+            {
+                "sub": "user-1",
+                "email": "admin@example.com",
+                "email_verified": True,
+            },
         ):
             with self.subTest(payload=payload):
                 with (
@@ -101,7 +106,7 @@ class RequireAdminTests(unittest.TestCase):
                 return_value={
                     "sub": "user-2",
                     "email": "other@example.com",
-                    "email_verified": True,
+                    "emailVerified": True,
                 },
             ),
         ):

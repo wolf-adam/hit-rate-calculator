@@ -56,7 +56,7 @@ def require_admin(
 
     email = payload.get("email")
     if (
-        payload.get("email_verified") is not True
+        payload.get("emailVerified") is not True
         or not isinstance(email, str)
         or email.strip().lower() not in allowlist
     ):
