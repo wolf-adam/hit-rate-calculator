@@ -57,7 +57,11 @@ class RequireAdminTests(unittest.TestCase):
             patch("app.auth._jwks_client") as jwks_client,
             patch(
                 "app.auth.jwt.decode",
-                return_value={"sub": "user-1", "email": "ADMIN@example.com"},
+                return_value={
+                    "sub": "user-1",
+                    "email": "ADMIN@example.com",
+                    "email_verified": True,
+                },
             ),
         ):
             jwks_client.return_value.get_signing_key_from_jwt.return_value.key = "key"
@@ -65,13 +69,40 @@ class RequireAdminTests(unittest.TestCase):
         self.assertEqual(user.subject, "user-1")
         self.assertEqual(user.email, "ADMIN@example.com")
 
+    def test_unverified_allowlisted_user_is_rejected(self) -> None:
+        for payload in (
+            {
+                "sub": "user-1",
+                "email": "admin@example.com",
+                "email_verified": False,
+            },
+            {"sub": "user-1", "email": "admin@example.com"},
+        ):
+            with self.subTest(payload=payload):
+                with (
+                    patch("app.auth.get_settings", return_value=self.settings),
+                    patch("app.auth._jwks_client") as jwks_client,
+                    patch("app.auth.jwt.decode", return_value=payload),
+                ):
+                    signing_key = (
+                        jwks_client.return_value.get_signing_key_from_jwt.return_value
+                    )
+                    signing_key.key = "key"
+                    with self.assertRaises(HTTPException) as raised:
+                        require_admin(self.credentials)
+                self.assertEqual(raised.exception.status_code, 403)
+
     def test_non_allowlisted_user_is_rejected(self) -> None:
         with (
             patch("app.auth.get_settings", return_value=self.settings),
             patch("app.auth._jwks_client") as jwks_client,
             patch(
                 "app.auth.jwt.decode",
-                return_value={"sub": "user-2", "email": "other@example.com"},
+                return_value={
+                    "sub": "user-2",
+                    "email": "other@example.com",
+                    "email_verified": True,
+                },
             ),
         ):
             jwks_client.return_value.get_signing_key_from_jwt.return_value.key = "key"

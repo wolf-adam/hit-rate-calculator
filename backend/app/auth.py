@@ -55,7 +55,11 @@ def require_admin(
         ) from error
 
     email = payload.get("email")
-    if not isinstance(email, str) or email.strip().lower() not in allowlist:
+    if (
+        payload.get("email_verified") is not True
+        or not isinstance(email, str)
+        or email.strip().lower() not in allowlist
+    ):
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             "This account is not authorized.",
