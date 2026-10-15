@@ -1,5 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Snackbar } from "@mui/material";
+import type { ReactNode } from "react";
+import {
+  BrowserRouter,
+  Link,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import {
+  AuthView,
+  NeonAuthUIProvider,
+  RedirectToSignIn,
+  SignedIn,
+  SignedOut,
+} from "@neondatabase/auth-ui";
+import "@neondatabase/auth-ui/css";
+import { Alert, Paper, Snackbar, Typography } from "@mui/material";
 import {
   fetchEurToHufRate,
   fetchCards,
@@ -30,6 +47,7 @@ import type {
   Card,
   SetOption,
 } from "../types";
+import { authClient, isAuthConfigured } from "../auth/client";
 import SummaryView from "../SummaryView/SummaryView";
 import AnalyticsView from "../AnalyticsView/AnalyticsView";
 import RecordCreationDialog from "../components/dialogs/RecordCreationDialog";
@@ -44,6 +62,91 @@ function getViewFromPath(pathname: string): AppView {
 }
 
 function App() {
+  if (!isAuthConfigured || !authClient) {
+    return (
+      <main className="auth-page">
+        <Alert severity="warning" variant="outlined">
+          Neon Auth is not configured. Enable Neon Auth with Google in Neon, then
+          set <code>VITE_NEON_AUTH_URL</code> to its Auth Base URL.
+        </Alert>
+      </main>
+    );
+  }
+
+  return (
+    <BrowserRouter>
+      <AuthProviderShell />
+    </BrowserRouter>
+  );
+}
+
+function AuthProviderShell() {
+  const navigate = useNavigate();
+
+  return (
+    <NeonAuthUIProvider
+      authClient={authClient!}
+      navigate={navigate}
+      Link={RouterLink}
+      basePath="/"
+      social={{ providers: ["google"] }}
+    >
+      <Routes>
+        <Route path="/sign-in" element={<AuthPage pathname="sign-in" />} />
+        <Route path="/sign-up" element={<AuthPage pathname="sign-up" />} />
+        <Route path="/sign-out" element={<AuthPage pathname="sign-out" />} />
+        <Route
+          path="*"
+          element={(
+            <RequireAuth>
+              <AppShell />
+            </RequireAuth>
+          )}
+        />
+      </Routes>
+    </NeonAuthUIProvider>
+  );
+}
+
+function RouterLink({
+  href,
+  className,
+  children,
+}: {
+  href: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return <Link to={href} className={className}>{children}</Link>;
+}
+
+function AuthPage({
+  pathname,
+}: {
+  pathname: "sign-in" | "sign-up" | "sign-out";
+}) {
+  return (
+    <main className="auth-page">
+      <Paper className="auth-card" elevation={0}>
+        <Typography className="auth-brand">HIT RATE CALCULATOR</Typography>
+        <AuthView pathname={pathname} />
+      </Paper>
+    </main>
+  );
+}
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <SignedIn>{children}</SignedIn>
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+    </>
+  );
+}
+
+function AppShell() {
   const [toast, setToast] = useState<{
     message: string;
     severity: "success" | "error";
@@ -68,9 +171,9 @@ function App() {
   const [productAnalyticsError, setProductAnalyticsError] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeView, setActiveView] = useState<AppView>(() =>
-    getViewFromPath(window.location.pathname),
-  );
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activeView = getViewFromPath(location.pathname);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [userDialogOpen, setUserDialogOpen] = useState(false);
 
@@ -236,17 +339,8 @@ function App() {
 
   function navigateTo(view: AppView) {
     const path = view === "analytics" ? "/analytics" : "/";
-    window.history.pushState({}, "", path);
-    setActiveView(view);
+    navigate(path);
   }
-
-  useEffect(() => {
-    const handlePopState = () => {
-      setActiveView(getViewFromPath(window.location.pathname));
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
 
   return (
     <main className="app-shell">

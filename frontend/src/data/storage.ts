@@ -16,7 +16,10 @@ type CachedExchangeRate = {
 export function readCachedSets(): SetOption[] {
   try {
     const value = localStorage.getItem(SETS_KEY)
-    return value ? (JSON.parse(value) as SetOption[]) : []
+    if (!value) return []
+
+    const cached: unknown = JSON.parse(value)
+    return Array.isArray(cached) ? (cached as SetOption[]) : []
   } catch {
     return []
   }

@@ -24,6 +24,29 @@
   flex-wrap: wrap;
 }
 
+.auth-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: min(100%, 440px);
+  padding: 32px;
+  border: 1px solid #ded8cc;
+  background: rgba(255, 253, 248, 0.92) !important;
+}
+
+.auth-brand {
+  margin-bottom: 24px !important;
+  color: #25221f;
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em;
+}
+
 @media (max-width: 640px) {
   .app-shell {
     width: calc(100% - 24px);

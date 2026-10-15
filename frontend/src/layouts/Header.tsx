@@ -12,6 +12,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import QueryStatsOutlinedIcon from "@mui/icons-material/QueryStatsOutlined";
+import { UserButton } from "@neondatabase/auth-ui";
 import type { Currency } from "../data/storage";
 import type { SetOption } from "../types";
 import "./Header.scss";
@@ -84,8 +85,9 @@ function Header({
             Turn your openings into meaningful insights.
           </Typography>
         </div>
-        {activeView === "summary" && (
-          <div className="header-actions">
+        <div className="header-actions">
+          {activeView === "summary" && (
+            <>
             <Button
               variant="contained"
               onClick={onAddUser}
@@ -115,8 +117,10 @@ function Header({
               <ToggleButton value="EUR" aria-label="EUR">EUR</ToggleButton>
               <ToggleButton value="HUF" aria-label="HUF">HUF</ToggleButton>
             </ToggleButtonGroup>
-          </div>
-        )}
+            </>
+          )}
+          <UserButton />
+        </div>
       </div>
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
         <MenuItem onClick={() => { onNavigate("summary"); setMenuAnchor(null); }}>Hall of Fame</MenuItem>
