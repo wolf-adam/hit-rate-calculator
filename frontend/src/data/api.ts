@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { authClient } from '../auth/client'
 import type {
   NewRecord,
   Card,
@@ -12,8 +13,21 @@ import type {
   SetOption,
 } from '../types'
 
-const client = axios.create({ baseURL: '/api' })
+const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/+$/, '')
+const apiBaseUrl = configuredApiUrl
+  ? `${configuredApiUrl.endsWith('/api') ? configuredApiUrl : `${configuredApiUrl}/api`}`
+  : '/api'
+const client = axios.create({ baseURL: apiBaseUrl })
 const exchangeClient = axios.create({ baseURL: 'https://api.frankfurter.dev/v1' })
+
+client.interceptors.request.use(async (config) => {
+  const { data } = await authClient.token()
+  const token = data?.token
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
 
 export function getApiErrorMessage(error: unknown, fallback: string): string {
   if (axios.isAxiosError(error)) {
@@ -24,8 +38,11 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
 }
 
 export async function fetchSets(): Promise<SetOption[]> {
-  const { data } = await client.get<SetOption[]>('/sets')
-  return data
+  const { data } = await client.get<unknown>('/sets')
+  if (!Array.isArray(data)) {
+    throw new Error('Invalid sets response.')
+  }
+  return data as SetOption[]
 }
 
 export async function fetchPlayers(): Promise<PlayerOption[]> {

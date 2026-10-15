@@ -1,5 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Snackbar } from "@mui/material";
+import type { ReactNode } from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
+import {
+  Alert,
+  Button,
+  CircularProgress,
+  Paper,
+  Snackbar,
+  Typography,
+} from "@mui/material";
 import {
   fetchEurToHufRate,
   fetchCards,
@@ -30,6 +47,11 @@ import type {
   Card,
   SetOption,
 } from "../types";
+import {
+  authClient,
+  isAuthConfigured,
+  NEON_AUTH_SESSION_VERIFIER_PARAM_NAME,
+} from "../auth/client";
 import SummaryView from "../SummaryView/SummaryView";
 import AnalyticsView from "../AnalyticsView/AnalyticsView";
 import RecordCreationDialog from "../components/dialogs/RecordCreationDialog";
@@ -44,6 +66,132 @@ function getViewFromPath(pathname: string): AppView {
 }
 
 function App() {
+  if (!isAuthConfigured) {
+    return (
+      <main className="auth-page">
+        <Alert severity="warning" variant="outlined">
+          Neon Auth is not configured. Enable Neon Auth with Google in Neon, then
+          set <code>VITE_NEON_AUTH_URL</code> to its Auth Base URL.
+        </Alert>
+      </main>
+    );
+  }
+
+  return (
+    <BrowserRouter>
+      <AuthProviderShell />
+    </BrowserRouter>
+  );
+}
+
+function AuthProviderShell() {
+  return (
+    <Routes>
+      <Route path="/sign-in" element={<AuthPage />} />
+      <Route path="/sign-up" element={<Navigate to="/sign-in" replace />} />
+      <Route
+        path="*"
+        element={(
+          <RequireAuth>
+            <AppShell />
+          </RequireAuth>
+        )}
+      />
+    </Routes>
+  );
+}
+
+function AuthPage() {
+  const [searchParams] = useSearchParams();
+  const { data: session, isPending } = authClient.useSession();
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [error, setError] = useState("");
+  const requestedRedirect = searchParams.get("redirectTo");
+  const redirectTo = requestedRedirect?.startsWith("/") &&
+    !requestedRedirect.startsWith("//")
+    ? requestedRedirect
+    : "/";
+
+  async function signInWithGoogle() {
+    setIsSigningIn(true);
+    setError("");
+    try {
+      const result = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: redirectTo,
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Google sign-in could not be started.");
+      } else if (result.data?.url) {
+        window.location.assign(result.data.url);
+      }
+    } catch {
+      setError("Google sign-in could not be started.");
+    } finally {
+      setIsSigningIn(false);
+    }
+  }
+
+  if (session) return <Navigate to={redirectTo} replace />;
+
+  return (
+    <main className="auth-page">
+      <Paper className="auth-card" elevation={0}>
+        <Typography className="auth-brand">HIT RATE CALCULATOR</Typography>
+        <Typography variant="h6" gutterBottom>Sign in</Typography>
+        {error && <Alert severity="error">{error}</Alert>}
+        <Button
+          fullWidth
+          variant="contained"
+          disabled={isPending || isSigningIn}
+          onClick={() => void signInWithGoogle()}
+        >
+          {isPending || isSigningIn
+            ? <CircularProgress size={20} color="inherit" />
+            : "Continue with Google"}
+        </Button>
+      </Paper>
+    </main>
+  );
+}
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { data: session, isPending } = authClient.useSession();
+  const location = useLocation();
+
+  useEffect(() => {
+    const callbackUrl = new URL(window.location.href);
+    if (!session || !callbackUrl.searchParams.has(NEON_AUTH_SESSION_VERIFIER_PARAM_NAME)) {
+      return;
+    }
+    callbackUrl.searchParams.delete(NEON_AUTH_SESSION_VERIFIER_PARAM_NAME);
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${callbackUrl.pathname}${callbackUrl.search}${callbackUrl.hash}`,
+    );
+  }, [location.search, session]);
+
+  if (isPending) {
+    return (
+      <main className="auth-page">
+        <CircularProgress aria-label="Checking sign-in" />
+      </main>
+    );
+  }
+  if (!session) {
+    const redirectTo = `${location.pathname}${location.search}${location.hash}`;
+    return (
+      <Navigate
+        to={`/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`}
+        replace
+      />
+    );
+  }
+  return <>{children}</>;
+}
+
+function AppShell() {
   const [toast, setToast] = useState<{
     message: string;
     severity: "success" | "error";
@@ -68,9 +216,9 @@ function App() {
   const [productAnalyticsError, setProductAnalyticsError] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeView, setActiveView] = useState<AppView>(() =>
-    getViewFromPath(window.location.pathname),
-  );
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activeView = getViewFromPath(location.pathname);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [userDialogOpen, setUserDialogOpen] = useState(false);
 
@@ -236,17 +384,8 @@ function App() {
 
   function navigateTo(view: AppView) {
     const path = view === "analytics" ? "/analytics" : "/";
-    window.history.pushState({}, "", path);
-    setActiveView(view);
+    navigate(path);
   }
-
-  useEffect(() => {
-    const handlePopState = () => {
-      setActiveView(getViewFromPath(window.location.pathname));
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
 
   return (
     <main className="app-shell">
@@ -257,6 +396,10 @@ function App() {
         players={players}
         products={products}
         onAddUser={() => setUserDialogOpen(true)}
+        onSignOut={async () => {
+          const result = await authClient.signOut();
+          if (!result.error) navigate("/sign-in", { replace: true });
+        }}
         setDialogOpen={setDialogOpen}
         onSetChange={handleSetChange}
         onCurrencyChange={(nextCurrency) => {

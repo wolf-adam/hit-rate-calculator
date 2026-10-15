@@ -3,6 +3,11 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import CasinoOutlinedIcon from "@mui/icons-material/CasinoOutlined";
+import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import { buildAnalyticsData } from "../domain/analytics";
 import type { ProductAnalytics, RecordRow, SetOption } from "../types";
 import "./AnalyticsView.scss";
@@ -63,32 +68,37 @@ function AnalyticsView({
             label: "Total boosters opened",
             value: data.totalBoosters.toLocaleString(),
             detail: "Across all players",
-            icon: "□",
+            icon: <Inventory2OutlinedIcon />,
+            tone: "volume",
           },
           {
             label: "Total hits",
             value: data.totalHits.toLocaleString(),
             detail: `${formatPercent(data.hitRate)} hit rate`,
-            icon: "◈",
+            icon: <AutoAwesomeOutlinedIcon />,
+            tone: "hits",
           },
           {
             label: "Premium hits",
             tooltip: "Premium hits include SIR, FR, HR, and CC rarities.",
             value: data.premiumHits.toLocaleString(),
             detail: `${formatPercent(data.totalBoosters ? (data.premiumHits / data.totalBoosters) * 100 : 0)} of boosters`,
-            icon: "✦",
+            icon: <WorkspacePremiumOutlinedIcon />,
+            tone: "premium",
           },
           {
             label: "1 in X boosters",
             value: data.oneInX ? `1 in ${data.oneInX.toFixed(2)}` : "-",
             detail: "For any hit",
-            icon: "▱",
+            icon: <CasinoOutlinedIcon />,
+            tone: "odds",
           },
           {
             label: "No-hit rate",
             value: formatPercent(data.noHitRate),
             detail: `${data.noHitBoosters.toLocaleString()} no-hit boosters`,
-            icon: "⊘",
+            icon: <BlockOutlinedIcon />,
+            tone: "no-hit",
           },
         ]}
       />
