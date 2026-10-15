@@ -73,6 +73,9 @@ function Header({
       </div>
       <div className="header-controls">
         <div className="header-copy">
+          <Typography className="collection-eyebrow">
+            Active collection
+          </Typography>
           <Select
             labelId="set-select-label"
             value={selectedSetId}
