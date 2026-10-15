@@ -194,7 +194,7 @@ Example (adapt names to the actual code):
 
 ```dotenv
 # Backend only; never expose to the frontend
-DATABASE_URL=postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require
+DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST/DATABASE?sslmode=require
 
 # Frontend public configuration (Vite example)
 VITE_NEON_AUTH_URL=https://<your-neon-auth-domain>
